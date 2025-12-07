@@ -1,0 +1,11 @@
+[package]
+name = "bookie-rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+crossterm = "0.29"        # terminal + raw mode
+ratatui = "0.30.0-beta.0" # tui widgets & layout (alias of tui-rs fork)
+fern = "0.7"              # simple file logging
+log = "0.4"
+chrono = "0.4"
