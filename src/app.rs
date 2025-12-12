@@ -1,68 +1,41 @@
-use crossterm;
-use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
-use ratatui::{
-    prelude::Line,
-    style::Stylize,
-    widgets::{Block, Paragraph},
-    {DefaultTerminal, Frame},
-};
-use ratatui::layout::Alignment;
+use crate::util::reset_screen;
+use crossterm::{cursor, execute};
+use std::io;
+use std::io::stdout;
 
-#[derive(Debug, Default)]
 pub struct App {
-    running: bool,
+    pub books: Vec<String>,
+    pub cursor_row: u16,
 }
 
 impl App {
     pub fn new() -> Self {
-        Self::default()
+        Self {
+            books: vec![
+                "The Hobbit".to_string(),
+                "Dune".to_string(),
+                "1984".to_string(),
+                "The Catcher in the Rye".to_string(),
+                "The Rust Programming Language".to_string(),
+            ],
+            cursor_row: 0,
+        }
     }
 
-    pub fn run(mut self, mut terminal: DefaultTerminal) -> color_eyre::Result<()> {
-        self.running = true;
-        while self.running {
-            terminal.draw(|frame| self.render(frame))?;
-            self.handle_crossterm_events()?;
+    pub fn render(&mut self) -> io::Result<()> {
+        let mut out = stdout();
+        reset_screen()?;
+
+        println!("📚 Books:\n");
+        self.cursor_row += 2;
+        execute!(out, cursor::MoveTo(0, self.cursor_row))?;
+
+        for (i, b) in self.books.iter().enumerate() {
+            println!("  {}. {}", i + 1, b);
+            self.cursor_row += 1;
+            execute!(out, cursor::MoveTo(0, self.cursor_row))?;
         }
+
         Ok(())
-    }
-
-    fn render(&mut self, frame: &mut Frame) {
-        let title = Line::from("Bookie - The Best Book Manager")
-            .bold()
-            .blue()
-            .centered();
-        let text = "Hello, Ratatui!\n\n\
-            Created using https://github.com/ratatui/templates\n\
-            Press `Esc`, `Ctrl-C` or `q` to stop running.";
-        frame.render_widget(
-            Paragraph::new(text)
-                .block(Block::default().title(title))
-                .left_aligned(),
-            frame.area(),
-        )
-    }
-
-    fn handle_crossterm_events(&mut self) -> color_eyre::Result<()> {
-        match crossterm::event::read()? {
-            Event::Key(key) if key.kind == KeyEventKind::Press => self.on_key_event(key),
-            Event::Mouse(_) => {}
-            Event::Resize(_, _) => {}
-            _ => {}
-        }
-        Ok(())
-    }
-
-    fn on_key_event(&mut self, key: KeyEvent) {
-        match (key.modifiers, key.code) {
-            (_, KeyCode::Esc | KeyCode::Char('q'))
-            | (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => self.quit(),
-            // Add other key handlers here.
-            _ => {}
-        }
-    }
-
-    fn quit(&mut self) {
-        self.running = false;
     }
 }
