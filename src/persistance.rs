@@ -10,6 +10,7 @@ pub fn load_books(path: &str) -> std::io::Result<Vec<Book>> {
     Ok(books)
 }
 
+#[allow(unused)]
 pub fn save_books(books: &[Book], path: &str) -> std::io::Result<()> {
     let json = serde_json::to_string_pretty(books).expect("Failed to serialize books");
     let mut file = File::create(path)?;

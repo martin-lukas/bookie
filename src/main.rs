@@ -1,48 +1,56 @@
-mod app;
 mod book;
+mod event_handling;
 mod logging;
 mod persistance;
 mod renderer;
+mod view;
 
-use crate::app::App;
-use crate::renderer::Renderer;
-use crossterm::event::{Event, KeyCode};
-use crossterm::terminal::{EnterAlternateScreen, LeaveAlternateScreen};
-use crossterm::{cursor, event, execute, terminal};
-use std::io;
-use std::io::stdout;
+use crate::{
+    event_handling::{EventHandler, HandleResult},
+    renderer::Renderer,
+    view::View,
+};
+use crossterm::{
+    cursor, event,
+    event::{Event, KeyCode},
+    execute, terminal,
+    terminal::{EnterAlternateScreen, LeaveAlternateScreen},
+};
+use log::info;
+use std::io::{self, stdout};
 
 fn main() -> io::Result<()> {
     logging::setup_logger().expect("Failed to setup logger");
+    info!("BOOKIE STARTED");
 
     init_screen()?;
 
     let books = persistance::load_books("books.json")?;
 
-    let mut app = App::new(books);
+    let mut view = View::new(&books);
 
     loop {
-        Renderer::draw(&app)?;
-
-        if let Event::Key(key) = event::read()? {
-            match key.code {
-                KeyCode::Up => {
-                    if app.selected > 0 {
-                        app.selected -= 1;
-                    }
-                }
-                KeyCode::Down => {
-                    if app.selected + 1 < app.books.len() {
-                        app.selected += 1;
-                    }
-                }
-                KeyCode::Char('q') => break,
-                _ => {}
+        Renderer::draw(&view)?;
+        let event = event::read()?;
+        info!("Event registered: {:?}", event);
+        if let Event::Key(key_event) = event {
+            match view.handle(&key_event) {
+                HandleResult::Handled => {}
+                HandleResult::Ignored => match event {
+                    Event::Key(key_event) => match key_event.code {
+                        KeyCode::Char('q') => break,
+                        _ => {}
+                    },
+                    _ => {}
+                },
+                HandleResult::Quit => break,
             }
         }
     }
 
-    exit_screen()
+    exit_screen()?;
+    info!("BOOKIE EXITING");
+    Ok(())
 }
 
 fn init_screen() -> io::Result<()> {
