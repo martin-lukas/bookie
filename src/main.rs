@@ -1,69 +1,69 @@
 mod book;
-mod event_handling;
 mod logging;
 mod persistance;
-mod renderer;
+mod rendering;
 mod view;
 
-use crate::{
-    event_handling::{EventHandler, HandleResult},
-    renderer::Renderer,
-    view::View,
-};
-use crossterm::{
-    cursor, event,
-    event::{Event, KeyCode},
-    execute, terminal,
-    terminal::{EnterAlternateScreen, LeaveAlternateScreen},
-};
+use crate::{rendering::Renderer, view::View};
+use crossterm::event::{self, Event, KeyCode};
 use log::info;
-use std::io::{self, stdout};
+use std::io;
 
 fn main() -> io::Result<()> {
     logging::setup_logger().expect("Failed to setup logger");
     info!("BOOKIE STARTED");
 
-    init_screen()?;
+    Renderer::init_screen()?;
 
     let books = persistance::load_books("books.json")?;
 
-    let mut view = View::new(&books);
+    let mut selected: usize = 0;
+    let mut view: View = View::List;
+    let mut view_changed = false;
 
     loop {
-        Renderer::draw(&view)?;
+        Renderer::render(&view, &books, selected, view_changed)?;
+        view_changed = false;
+
         let event = event::read()?;
         info!("Event registered: {:?}", event);
         if let Event::Key(key_event) = event {
-            match view.handle(&key_event) {
-                HandleResult::Handled => {}
-                HandleResult::Ignored => match event {
-                    Event::Key(key_event) => match key_event.code {
-                        KeyCode::Char('q') => break,
-                        _ => {}
-                    },
+            match view {
+                View::List => match key_event.code {
+                    KeyCode::Up => {
+                        info!("Moving up the book list");
+                        if selected > 0 {
+                            selected -= 1;
+                        }
+                    }
+                    KeyCode::Down => {
+                        info!("Moving down the book list");
+                        if selected + 1 < books.len() {
+                            selected += 1;
+                        }
+                    }
+                    KeyCode::Enter => {
+                        info!("Changing view to Detail");
+                        view = View::Detail;
+                        view_changed = true;
+                    }
+                    KeyCode::Char('q') => break,
                     _ => {}
                 },
-                HandleResult::Quit => break,
+                View::Detail => match key_event.code {
+                    KeyCode::Backspace => {
+                        info!("Changing view to List");
+                        view = View::List;
+                        view_changed = true;
+                    }
+                    KeyCode::Char('q') => break,
+                    _ => {}
+                },
             }
         }
     }
 
-    exit_screen()?;
+    Renderer::exit_screen()?;
     info!("BOOKIE EXITING");
-    Ok(())
-}
-
-fn init_screen() -> io::Result<()> {
-    let mut out = stdout();
-    terminal::enable_raw_mode()?;
-    execute!(out, EnterAlternateScreen)?;
-    Ok(())
-}
-
-fn exit_screen() -> io::Result<()> {
-    let mut out = stdout();
-    execute!(out, LeaveAlternateScreen)?;
-    execute!(out, cursor::Show)?;
-    terminal::disable_raw_mode()?;
     Ok(())
 }
