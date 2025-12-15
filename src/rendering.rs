@@ -1,10 +1,8 @@
-use crate::book::Book;
-use crate::view::View;
-use crossterm::style::{PrintStyledContent, Stylize};
+use crate::{app::App, view::View};
 use crossterm::{
     cursor::{Hide, MoveTo, Show},
     execute,
-    style::Print,
+    style::{Print, PrintStyledContent, Stylize},
     terminal::{self, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use std::io::{self, stdout};
@@ -27,28 +25,20 @@ impl Renderer {
         Ok(())
     }
 
-    pub fn render(
-        view: &View,
-        books: &Vec<Book>,
-        selected: usize,
-        view_changed: bool,
-    ) -> io::Result<()> {
-        Renderer::reset_screen(view_changed)?;
-        match view {
-            View::List => Renderer::render_list(&books, &selected)?,
-            View::Detail => match books.get(selected) {
-                Some(book) => Renderer::render_detail(&book)?,
-                None => panic!("Non-existent book selected for rendering!"),
-            },
+    pub fn render(app: &App) -> io::Result<()> {
+        Renderer::reset_screen(app.view_changed)?;
+        match app.view {
+            View::List => Renderer::render_list(&app)?,
+            View::Detail => Renderer::render_detail(&app)?,
         }
         Ok(())
     }
 
-    pub fn render_list(books: &Vec<Book>, selected: &usize) -> io::Result<()> {
+    pub fn render_list(app: &App) -> io::Result<()> {
         let mut out = stdout();
-        for (i, book) in books.iter().enumerate() {
+        for (i, book) in app.books.iter().enumerate() {
             execute!(out, MoveTo(0, i as u16))?;
-            if i.eq(selected) {
+            if i == app.selected {
                 execute!(
                     out,
                     PrintStyledContent(
@@ -70,21 +60,25 @@ impl Renderer {
         Ok(())
     }
 
-    pub fn render_detail(book: &Book) -> io::Result<()> {
-        let mut out = stdout();
-        execute!(
-            out,
-            MoveTo(0, 0),
-            Print(format!("\tTitle: {}\n", book.title)),
-        )?;
-        execute!(
-            out,
-            MoveTo(0, 1),
-            Print(format!("\tAuthor: {}\n", book.author)),
-        )?;
-        execute!(out, MoveTo(0, 2), Print(format!("\tYear: {}\n", book.year)),)?;
+    pub fn render_detail(app: &App) -> io::Result<()> {
+        if let Some(book) = app.books.get(app.selected) {
+            let mut out = stdout();
+            execute!(
+                out,
+                MoveTo(0, 0),
+                Print(format!("\tTitle: {}\n", book.title)),
+            )?;
+            execute!(
+                out,
+                MoveTo(0, 1),
+                Print(format!("\tAuthor: {}\n", book.author)),
+            )?;
+            execute!(out, MoveTo(0, 2), Print(format!("\tYear: {}\n", book.year)),)?;
 
-        Ok(())
+            Ok(())
+        } else {
+            panic!("Non-existent book selected for rendering!")
+        }
     }
 
     pub fn reset_screen(should_clear: bool) -> io::Result<()> {
