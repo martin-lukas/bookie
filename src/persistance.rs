@@ -1,4 +1,4 @@
-use crate::{app::App, book::Book, view::View};
+use crate::domain::{app::App, book::Book, view::View};
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::{
@@ -19,7 +19,7 @@ impl SavedState {
     pub fn new(app: App) -> Self {
         Self {
             books: app.books,
-            view: app.view,
+            view: View::BookList,
             selected: app.selected,
         }
     }

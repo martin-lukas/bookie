@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum View {
-    List,
-    Detail,
+    BookList,
+    BookDetail,
+    AddBook,
 }

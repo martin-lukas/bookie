@@ -1,16 +1,15 @@
-mod app;
-mod book;
-mod event_handling;
+mod domain;
+mod event;
 mod exit;
 mod logging;
 mod persistance;
-mod rendering;
+mod render;
 mod util;
-mod view;
 
 use crate::{
-    app::App, event_handling::handle_event, exit::install_panic_hook, exit::TerminalGuard,
-    rendering::Renderer,
+    domain::app::App,
+    event::hander::handle_event,
+    exit::{install_panic_hook, TerminalGuard},
 };
 use log::info;
 use std::io;
@@ -26,7 +25,7 @@ fn main() -> io::Result<()> {
     let mut app = App::new(saved_state);
 
     loop {
-        Renderer::render(&app)?;
+        render::render(&app)?;
         handle_event(&mut app)?;
         if app.should_quit {
             break;
