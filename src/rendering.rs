@@ -7,6 +7,16 @@ use crossterm::{
 };
 use std::io::{self, stdout};
 
+const COL_ID: usize = 4;
+const COL_TITLE: usize = 30;
+const COL_AUTHOR: usize = 20;
+const COL_YEAR: usize = 4;
+const TABLE_WIDTH: usize = COL_ID + COL_TITLE + COL_AUTHOR + COL_YEAR;
+
+fn pad(s: &str, width: usize) -> String {
+    format!("{:<width$}", s, width = width)
+}
+
 pub struct Renderer;
 
 impl Renderer {
@@ -36,26 +46,52 @@ impl Renderer {
 
     pub fn render_list(app: &App) -> io::Result<()> {
         let mut out = stdout();
+        execute!(
+            out,
+            PrintStyledContent(
+                format!(
+                    "{}{}{}{}",
+                    pad("#", COL_ID),
+                    pad("Title", COL_TITLE),
+                    pad("Author", COL_AUTHOR),
+                    pad("Year", COL_YEAR),
+                )
+                .bold()
+            ),
+            MoveTo(0, 1),
+            Print("-".repeat(TABLE_WIDTH)),
+            MoveTo(0, 2),
+        )?;
+
         for (i, book) in app.books.iter().enumerate() {
-            execute!(out, MoveTo(0, i as u16))?;
             if i == app.selected {
                 execute!(
                     out,
                     PrintStyledContent(
-                        format!("> {} ({}) [{}]\n", book.title, book.author, book.year)
-                            .bold()
-                            .yellow()
+                        format!(
+                            "{}{}{}{}",
+                            pad(&(i + 1).to_string(), COL_ID),
+                            pad(&book.title, COL_TITLE),
+                            pad(&book.author, COL_AUTHOR),
+                            pad(&book.year.to_string(), COL_YEAR),
+                        )
+                        .bold()
+                        .yellow()
                     ),
                 )?;
             } else {
                 execute!(
                     out,
                     Print(format!(
-                        "  {} ({}) [{}]\n",
-                        book.title, book.author, book.year
+                        "{}{}{}{}",
+                        pad(&(i + 1).to_string(), COL_ID),
+                        pad(&book.title, COL_TITLE),
+                        pad(&book.author, COL_AUTHOR),
+                        pad(&book.year.to_string(), COL_YEAR),
                     ))
                 )?;
             }
+            execute!(out, MoveTo(0, (i + 3) as u16))?;
         }
         Ok(())
     }
