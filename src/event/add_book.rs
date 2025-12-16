@@ -12,7 +12,10 @@ pub fn handle_event(app: &mut App, event: Event) {
                 app.should_quit = true
             }
             (KeyCode::Enter, mods) if mods.is_empty() => {
-                if form.is_valid() {
+                // TODO: Enter goes below line... And last line enter - submit.
+                if let Some(error_message) = form.is_valid() {
+                    form.error = format!("❗{}❗", error_message);
+                } else {
                     let book = Book {
                         title: form.title.to_string(),
                         author: form.author.to_string(),
@@ -21,8 +24,6 @@ pub fn handle_event(app: &mut App, event: Event) {
                     };
                     app.add_book(book);
                     app.change_view(View::BookList);
-                } else {
-                    form.error = "Form is not valid".to_string();
                 }
             }
             (KeyCode::Backspace, mods) if mods.is_empty() => form.remove_active_last_char(),

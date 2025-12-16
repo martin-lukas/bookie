@@ -28,8 +28,11 @@ impl App {
 
     pub fn move_selected(&mut self, delta: i64) {
         let mut new_selected = self.selected as i64 + delta;
-        new_selected = new_selected.clamp(0, (self.books.len() -1) as i64);
-        info!("Selected book index change: {} -> {}", self.selected, new_selected);
+        new_selected = new_selected.clamp(0, (self.books.len() - 1) as i64);
+        info!(
+            "Selected book index change: {} -> {}",
+            self.selected, new_selected
+        );
         self.selected = new_selected as usize;
     }
 
@@ -92,16 +95,30 @@ impl AddBookForm {
         self.rating = new_rating.clamp(0, MAX_RATING as i8) as u8;
     }
 
-    pub fn is_valid(&self) -> bool {
-        !self.title.is_empty()
-            && !self.author.is_empty()
-            && !self.year.is_empty()
-            && self
+    pub fn is_valid(&self) -> Option<String> {
+        if self.title.is_empty() {
+            return Some("Title shouldn't be empty".to_string());
+        }
+        if self.author.is_empty() {
+            return Some("Author shouldn't be empty".to_string());
+        }
+        let current_year = chrono::Utc::now().year() as u16;
+        if self.year.is_empty()
+            || self
                 .year
                 .parse::<u16>()
-                .map(|y| (0..=(chrono::Utc::now().year() as u16)).contains(&y))
+                .map(|y| !(0..=current_year).contains(&y))
                 .unwrap_or(false)
-            && self.rating <= MAX_RATING
+        {
+            return Some(format!(
+                "Year should be a number between 0 and {}",
+                current_year
+            ));
+        }
+        if self.rating > MAX_RATING {
+            return Some(format!("Rating should be at most {}", MAX_RATING));
+        }
+        None
     }
 
     pub fn clear_error(&mut self) {
