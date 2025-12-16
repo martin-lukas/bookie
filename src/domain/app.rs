@@ -42,6 +42,40 @@ pub struct AddBookForm {
 }
 
 impl AddBookForm {
+    pub fn move_active(&mut self, delta: i8) {
+        self.clear_error();
+        let new_active = self.active as i8 + delta;
+        self.active = Field::get_by_index(new_active as usize);
+    }
+
+    pub fn add_active_char(&mut self, c: char) {
+        self.clear_error();
+        match self.active {
+            Field::Title => self.title.push(c),
+            Field::Author => self.author.push(c),
+            Field::Year => self.year.push(c),
+            Field::Rating => (),
+        }
+    }
+    pub fn remove_active_last_char(&mut self) {
+        self.clear_error();
+        match self.active {
+            Field::Title => self.title.pop(),
+            Field::Author => self.author.pop(),
+            Field::Year => self.year.pop(),
+            Field::Rating => None,
+        };
+    }
+
+    pub fn change_rating(&mut self, delta: i8) {
+        if self.active != Field::Rating {
+            return;
+        }
+        self.clear_error();
+        let new_rating = self.rating as i8 + delta;
+        self.rating = new_rating.clamp(0, MAX_RATING as i8) as u8;
+    }
+
     pub fn is_valid(&self) -> bool {
         !self.title.is_empty()
             && !self.author.is_empty()
@@ -53,12 +87,16 @@ impl AddBookForm {
                 .unwrap_or(false)
             && self.rating <= MAX_RATING
     }
+
+    pub fn clear_error(&mut self) {
+        self.error = String::new();
+    }
 }
 
 pub const MAX_RATING: u8 = 5;
 pub const DEFAULT_RATING: u8 = 1;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Field {
     Title,
     Author,
