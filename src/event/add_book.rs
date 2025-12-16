@@ -1,6 +1,5 @@
 use crate::domain::{app::App, book::Book, view::View};
 use crossterm::event::{Event, KeyCode, KeyModifiers};
-use log::info;
 
 pub fn handle_event(app: &mut App, event: Event) {
     if let Event::Key(key) = event {
@@ -20,13 +19,8 @@ pub fn handle_event(app: &mut App, event: Event) {
                         year: form.year.parse::<u16>().unwrap(),
                         rating: form.rating,
                     };
-                    info!("Adding book: {:?}", book);
                     app.add_book(book);
-
-                    info!("Changing view to Book List");
-                    app.view = View::BookList;
-                    app.add_book_form = None;
-                    app.should_refresh = true;
+                    app.change_view(View::BookList);
                 } else {
                     form.error = "Form is not valid".to_string();
                 }

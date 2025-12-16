@@ -3,11 +3,12 @@ use crate::{
     persistance::SavedState,
 };
 use chrono::Datelike;
+use log::info;
 
 pub struct App {
     pub books: Vec<Book>,
     pub selected: usize,
-    pub view: View,
+    pub active_view: View,
     pub should_refresh: bool,
     pub add_book_form: Option<AddBookForm>,
     pub should_quit: bool,
@@ -18,16 +19,31 @@ impl App {
         App {
             books: saved_state.books,
             selected: saved_state.selected,
-            view: saved_state.view,
+            active_view: saved_state.view,
             should_quit: false,
             should_refresh: false,
             add_book_form: None,
         }
     }
 
+    pub fn move_selected(&mut self, delta: i64) {
+        let mut new_selected = self.selected as i64 + delta;
+        new_selected = new_selected.clamp(0, (self.books.len() -1) as i64);
+        info!("Selected book index change: {} -> {}", self.selected, new_selected);
+        self.selected = new_selected as usize;
+    }
+
+    pub fn change_view(&mut self, new_view: View) {
+        info!("View change: {:?} -> {:?}", self.active_view, new_view);
+        self.active_view = new_view;
+        self.should_refresh = true;
+    }
+
     pub fn add_book(&mut self, book: Book) {
+        info!("New book added: {:?}", book);
         self.books.push(book);
         self.books.sort_by(|a, b| a.title.cmp(&b.title));
+        self.add_book_form = None;
     }
 }
 
@@ -37,20 +53,20 @@ pub struct AddBookForm {
     pub author: String,
     pub year: String,
     pub rating: u8,
-    pub active: Field,
+    pub active_field: Field,
     pub error: String,
 }
 
 impl AddBookForm {
     pub fn move_active(&mut self, delta: i8) {
         self.clear_error();
-        let new_active = self.active as i8 + delta;
-        self.active = Field::get_by_index(new_active as usize);
+        let new_active = self.active_field as i8 + delta;
+        self.active_field = Field::get_by_index(new_active as usize);
     }
 
     pub fn add_active_char(&mut self, c: char) {
         self.clear_error();
-        match self.active {
+        match self.active_field {
             Field::Title => self.title.push(c),
             Field::Author => self.author.push(c),
             Field::Year => self.year.push(c),
@@ -59,7 +75,7 @@ impl AddBookForm {
     }
     pub fn remove_active_last_char(&mut self) {
         self.clear_error();
-        match self.active {
+        match self.active_field {
             Field::Title => self.title.pop(),
             Field::Author => self.author.pop(),
             Field::Year => self.year.pop(),
@@ -68,7 +84,7 @@ impl AddBookForm {
     }
 
     pub fn change_rating(&mut self, delta: i8) {
-        if self.active != Field::Rating {
+        if self.active_field != Field::Rating {
             return;
         }
         self.clear_error();

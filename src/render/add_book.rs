@@ -24,7 +24,7 @@ pub fn render_add_book(app: &App) -> io::Result<()> {
         author,
         year,
         rating,
-        active,
+        active_field: active,
         error,
     }) = &app.add_book_form
     {

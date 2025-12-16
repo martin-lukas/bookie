@@ -12,7 +12,7 @@ use std::io::{self, stdout};
 
 pub fn render(app: &App) -> io::Result<()> {
     reset_screen(app.should_refresh)?;
-    match app.view {
+    match app.active_view {
         View::BookList => book_list::render_book_list(&app)?,
         View::BookDetail => book_detail::render_book_detail(&app)?,
         View::AddBook => add_book::render_add_book(&app)?,

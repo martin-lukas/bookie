@@ -12,8 +12,7 @@ pub fn handle_event(app: &mut App) -> io::Result<()> {
     app.should_refresh = false;
     let event = event::read()?;
     info!("Event registered: {:?}", event);
-    app.should_refresh = false;
-    match app.view {
+    match app.active_view {
         View::BookList => book_list::handle_event(app, event),
         View::BookDetail => book_detail::handle_event(app, event),
         View::AddBook => add_book::handle_event(app, event),
