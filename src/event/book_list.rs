@@ -1,3 +1,4 @@
+use std::cmp::max;
 use crate::domain::{
     app::{AddBookForm, App, Field},
     view::View,
@@ -24,7 +25,7 @@ pub fn handle_event(app: &mut App, event: Event) {
             KeyCode::Enter => {
                 info!("Changing view to Book Detail");
                 app.view = View::BookDetail;
-                app.view_changed = true;
+                app.should_refresh = true;
             }
             KeyCode::Char('a') => {
                 info!("Changing view to Add Book");
@@ -37,7 +38,12 @@ pub fn handle_event(app: &mut App, event: Event) {
                     active: Field::Title,
                     error: String::new(),
                 });
-                app.view_changed = true;
+                app.should_refresh = true;
+            }
+            KeyCode::Char('d') => {
+                app.books.remove(app.selected);
+                app.selected = max(0, app.selected - 1);
+                app.should_refresh = true;
             }
             KeyCode::Char('q') => app.should_quit = true,
             _ => {}

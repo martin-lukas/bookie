@@ -5,7 +5,10 @@ use crate::{
 use crossterm::{
     cursor::MoveToNextLine,
     execute,
-    style::{Color, Print, PrintStyledContent, ResetColor, SetForegroundColor, Stylize},
+    style::{
+        Attribute, Color, Print, PrintStyledContent, ResetColor, SetAttribute, SetForegroundColor,
+        Stylize,
+    },
 };
 use std::io::{self, stdout};
 
@@ -30,13 +33,15 @@ pub fn render_book_list(app: &App) -> io::Result<()> {
         if i == app.selected {
             execute!(
                 out,
+                SetAttribute(Attribute::Bold),
                 SetForegroundColor(Color::Yellow),
                 Print(rpad(&(i + 1).to_string(), COL_ID)),
                 Print(rpad(&book.title, COL_TITLE)),
                 Print(rpad(&book.author, COL_AUTHOR)),
                 Print(rpad(&book.year.to_string(), COL_YEAR)),
                 Print(rpad(&STAR.repeat(book.rating as usize), COL_YEAR)),
-                ResetColor
+                ResetColor,
+                SetAttribute(Attribute::Reset),
             )?;
         } else {
             execute!(

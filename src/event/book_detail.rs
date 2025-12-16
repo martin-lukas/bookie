@@ -8,7 +8,7 @@ pub fn handle_event(app: &mut App, event: Event) {
             KeyCode::Backspace => {
                 info!("Changing view to Book List");
                 app.view = View::BookList;
-                app.view_changed = true;
+                app.should_refresh = true;
             }
             KeyCode::Char('q') => app.should_quit = true,
             _ => {}

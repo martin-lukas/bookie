@@ -11,7 +11,7 @@ use crossterm::{
 use std::io::{self, stdout};
 
 pub fn render(app: &App) -> io::Result<()> {
-    reset_screen(app.view_changed)?;
+    reset_screen(app.should_refresh)?;
     match app.view {
         View::BookList => book_list::render_book_list(&app)?,
         View::BookDetail => book_detail::render_book_detail(&app)?,
@@ -20,9 +20,9 @@ pub fn render(app: &App) -> io::Result<()> {
     Ok(())
 }
 
-fn reset_screen(should_clear: bool) -> io::Result<()> {
+fn reset_screen(should_refresh: bool) -> io::Result<()> {
     let mut out = stdout();
-    if should_clear {
+    if should_refresh {
         execute!(out, Clear(ClearType::All))?;
     }
     execute!(out, MoveTo(0, 0), Hide)

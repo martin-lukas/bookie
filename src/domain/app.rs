@@ -8,7 +8,7 @@ pub struct App {
     pub books: Vec<Book>,
     pub selected: usize,
     pub view: View,
-    pub view_changed: bool,
+    pub should_refresh: bool,
     pub add_book_form: Option<AddBookForm>,
     pub should_quit: bool,
 }
@@ -20,7 +20,7 @@ impl App {
             selected: saved_state.selected,
             view: saved_state.view,
             should_quit: false,
-            view_changed: false,
+            should_refresh: false,
             add_book_form: None,
         }
     }

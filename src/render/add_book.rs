@@ -62,17 +62,17 @@ pub fn render_add_book(app: &App) -> io::Result<()> {
                 MoveUp(1),
             )?;
         }
-        let offset: i8 = match active {
-            Field::Title => title.len() as i8,
-            Field::Author => author.len() as i8,
-            Field::Year => year.len() as i8,
-            Field::Rating => -1,
+        let offset_opt = match active {
+            Field::Title => Some(title.len()),
+            Field::Author => Some(author.len()),
+            Field::Year => Some(year.len()),
+            Field::Rating => None,
         };
-        if offset != -1 {
+        if let Some(offset) = offset_opt {
             execute!(
                 out,
                 MoveUp((Field::COUNT - active.index()) as u16),
-                MoveToColumn(((COL_FIELD as i8) + offset) as u16),
+                MoveToColumn((COL_FIELD + offset) as u16),
                 Show
             )?;
         }

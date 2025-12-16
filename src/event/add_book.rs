@@ -22,7 +22,7 @@ pub fn handle_event(app: &mut App, event: Event) {
                         info!("Changing view to Book List");
                         app.view = View::BookList;
                         app.add_book_form = None;
-                        app.view_changed = true;
+                        app.should_refresh = true;
                     } else {
                         form.error = "Form is not valid".to_string();
                     }
