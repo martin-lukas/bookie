@@ -3,14 +3,16 @@
     {
       "title": "1984",
       "author": "George Orwell",
-      "year": 1956
+      "year": 1956,
+      "rating": 4
     },
     {
       "title": "Catch 22",
       "author": "Joseph Heller",
-      "year": 1954
+      "year": 1954,
+      "rating": 5
     }
   ],
   "view": "BookList",
-  "selected": 1
+  "selected": 0
 }

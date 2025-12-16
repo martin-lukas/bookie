@@ -8,8 +8,9 @@ mod util;
 
 use crate::{
     domain::app::App,
-    event::hander::handle_event,
+    event::handle_event,
     exit::{install_panic_hook, TerminalGuard},
+    render::render,
 };
 use log::info;
 use std::io;
@@ -25,7 +26,7 @@ fn main() -> io::Result<()> {
     let mut app = App::new(saved_state);
 
     loop {
-        render::render(&app)?;
+        render(&app)?;
         handle_event(&mut app)?;
         if app.should_quit {
             break;
