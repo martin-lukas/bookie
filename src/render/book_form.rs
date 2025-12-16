@@ -1,7 +1,8 @@
 use crate::{
     domain::{
-        app::{AddBookForm, App, Field},
+        app::App,
         book::STAR,
+        book_form::{BookForm, Field},
     },
     util::rpad,
 };
@@ -22,7 +23,7 @@ pub fn render_add_book(app: &App) -> io::Result<()> {
     let mut out = stdout();
     execute!(out, Clear(ClearType::All))?;
 
-    if let Some(AddBookForm {
+    if let Some(BookForm {
         title,
         author,
         year,

@@ -1,3 +1,4 @@
+use crossterm::cursor::SetCursorStyle;
 use crossterm::{
     cursor::{Hide, Show},
     execute,
@@ -13,7 +14,12 @@ pub fn install_panic_hook() {
 
     panic::set_hook(Box::new(move |panic_info| {
         let _ = disable_raw_mode();
-        let _ = execute!(stderr(), LeaveAlternateScreen, Show);
+        let _ = execute!(
+            stderr(),
+            SetCursorStyle::BlinkingBlock,
+            LeaveAlternateScreen,
+            Show
+        );
         let _ = stderr().flush();
 
         default_hook(panic_info);
@@ -32,7 +38,12 @@ impl TerminalGuard {
 
 impl Drop for TerminalGuard {
     fn drop(&mut self) {
-        let _ = execute!(stdout(), LeaveAlternateScreen, Show);
+        let _ = execute!(
+            stdout(),
+            SetCursorStyle::BlinkingBlock,
+            LeaveAlternateScreen,
+            Show
+        );
         let _ = disable_raw_mode();
     }
 }

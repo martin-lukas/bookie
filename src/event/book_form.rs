@@ -1,5 +1,4 @@
-use crate::domain::app::Field;
-use crate::domain::{app::App, book::Book, view::View};
+use crate::domain::{app::App, book::Book, book_form::Field, view::View};
 use crossterm::event::{Event, KeyCode, KeyModifiers};
 
 pub fn handle_event(app: &mut App, event: Event) {
@@ -16,7 +15,6 @@ pub fn handle_event(app: &mut App, event: Event) {
                 form.move_active(1)
             }
             (KeyCode::Enter, mods) if mods.is_empty() => {
-                // TODO: Enter goes below line... And last line enter - submit.
                 if let Some(error_message) = form.is_valid() {
                     form.error = format!("❗{}❗", error_message);
                 } else {

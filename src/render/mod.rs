@@ -1,4 +1,4 @@
-pub mod add_book;
+pub mod book_form;
 pub mod book_detail;
 pub mod book_list;
 
@@ -15,7 +15,7 @@ pub fn render(app: &App) -> io::Result<()> {
     match app.active_view {
         View::BookList => book_list::render_book_list(&app)?,
         View::BookDetail => book_detail::render_book_detail(&app)?,
-        View::AddBook => add_book::render_add_book(&app)?,
+        View::AddBook => book_form::render_add_book(&app)?,
     }
     Ok(())
 }

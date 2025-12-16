@@ -16,7 +16,7 @@ const COL_ID: usize = 4;
 const COL_TITLE: usize = 30;
 const COL_AUTHOR: usize = 20;
 const COL_YEAR: usize = 6;
-const COL_RATING: usize = 5;
+const COL_RATING: usize = 6;
 const TABLE_WIDTH: usize = COL_ID + COL_TITLE + COL_AUTHOR + COL_YEAR + COL_RATING;
 
 pub fn render_book_list(app: &App) -> io::Result<()> {

@@ -1,10 +1,10 @@
-use std::cmp::max;
 use crate::domain::{
-    app::{AddBookForm, App, Field},
+    app::App,
+    book_form::{BookForm, Field, DEFAULT_RATING},
     view::View,
 };
 use crossterm::event::{Event, KeyCode};
-use crate::domain::app::DEFAULT_RATING;
+use std::cmp::max;
 
 pub fn handle_event(app: &mut App, event: Event) {
     if let Event::Key(key) = event {
@@ -13,7 +13,7 @@ pub fn handle_event(app: &mut App, event: Event) {
             KeyCode::Down => app.move_selected(1),
             KeyCode::Enter => app.change_view(View::BookDetail),
             KeyCode::Char('a') => {
-                app.add_book_form = Some(AddBookForm {
+                app.add_book_form = Some(BookForm {
                     title: String::new(),
                     author: String::new(),
                     year: String::new(),
