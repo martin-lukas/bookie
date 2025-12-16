@@ -63,7 +63,8 @@ pub struct AddBookForm {
 impl AddBookForm {
     pub fn move_active(&mut self, delta: i8) {
         self.clear_error();
-        let new_active = self.active_field as i8 + delta;
+        let mut new_active = self.active_field as i8 + delta;
+        new_active = new_active.clamp(0, (Field::COUNT - 1) as i8);
         self.active_field = Field::get_by_index(new_active as usize);
     }
 

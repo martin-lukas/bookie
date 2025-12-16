@@ -1,3 +1,4 @@
+use crate::domain::app::Field;
 use crate::domain::{app::App, book::Book, view::View};
 use crossterm::event::{Event, KeyCode, KeyModifiers};
 
@@ -10,6 +11,9 @@ pub fn handle_event(app: &mut App, event: Event) {
         match (key.code, key.modifiers) {
             (KeyCode::Char('c'), mods) if mods.contains(KeyModifiers::CONTROL) => {
                 app.should_quit = true
+            }
+            (KeyCode::Enter, mods) if mods.is_empty() && form.active_field != Field::Rating => {
+                form.move_active(1)
             }
             (KeyCode::Enter, mods) if mods.is_empty() => {
                 // TODO: Enter goes below line... And last line enter - submit.

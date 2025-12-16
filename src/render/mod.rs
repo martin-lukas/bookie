@@ -4,7 +4,7 @@ pub mod book_list;
 
 use crate::domain::{app::App, view::View};
 use crossterm::{
-    cursor::{Hide, MoveTo},
+    cursor::{Hide, MoveTo, SetCursorStyle},
     execute,
     terminal::{Clear, ClearType},
 };
@@ -25,5 +25,6 @@ fn reset_screen(should_refresh: bool) -> io::Result<()> {
     if should_refresh {
         execute!(out, Clear(ClearType::All))?;
     }
-    execute!(out, MoveTo(0, 0), Hide)
+
+    execute!(out, MoveTo(0, 0), SetCursorStyle::BlinkingBlock, Hide)
 }

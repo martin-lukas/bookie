@@ -6,12 +6,15 @@ use crate::{
     util::rpad,
 };
 use crossterm::{
-    cursor::{MoveToColumn, MoveToNextLine, MoveUp, Show},
+    cursor::{MoveToColumn, MoveToNextLine, MoveUp, SetCursorStyle, Show},
     execute,
-    style::{Print, PrintStyledContent, Stylize},
+    style::{style, PrintStyledContent, Stylize},
     terminal::{Clear, ClearType},
 };
-use std::io::{self, stdout};
+use std::{
+    cmp::max,
+    io::{self, stdout},
+};
 
 const COL_FIELD: usize = 8;
 
@@ -24,35 +27,29 @@ pub fn render_add_book(app: &App) -> io::Result<()> {
         author,
         year,
         rating,
-        active_field: active,
+        active_field,
         error,
     }) = &app.add_book_form
     {
-        execute!(
-            out,
-            PrintStyledContent(rpad("Title:", COL_FIELD).bold()),
-            Print(title),
-            MoveToNextLine(1)
-        )?;
-        execute!(
-            out,
-            PrintStyledContent(rpad("Author:", COL_FIELD).bold()),
-            Print(author),
-            MoveToNextLine(1)
-        )?;
-        execute!(
-            out,
-            PrintStyledContent(rpad("Year:", COL_FIELD).bold()),
-            Print(year),
-            MoveToNextLine(1)
-        )?;
-
-        execute!(
-            out,
-            PrintStyledContent(rpad("Rating:", COL_FIELD).bold()),
-            PrintStyledContent(STAR.repeat((*rating) as usize).yellow()),
-            MoveToNextLine(1)
-        )?;
+        let rows = [
+            ("Title:", title.to_string()),
+            ("Author:", author.to_string()),
+            ("Year:", year.to_string()),
+            ("Rating:", STAR.repeat(*rating as usize)),
+        ];
+        for (i, (label, value)) in rows.iter().enumerate() {
+            let value_style = if i == Field::Rating.index() {
+                value.as_str().yellow()
+            } else {
+                style(value.as_str())
+            };
+            execute!(
+                out,
+                PrintStyledContent(rpad(label, COL_FIELD).bold()),
+                PrintStyledContent(value_style),
+                MoveToNextLine(1)
+            )?;
+        }
 
         if !error.is_empty() {
             execute!(
@@ -62,16 +59,19 @@ pub fn render_add_book(app: &App) -> io::Result<()> {
                 MoveUp(1),
             )?;
         }
-        let offset_opt = match active {
+        let offset_opt = match active_field {
             Field::Title => Some(title.len()),
             Field::Author => Some(author.len()),
             Field::Year => Some(year.len()),
-            Field::Rating => None,
+            Field::Rating => Some(max(0, *rating as i8 - 1) as usize),
         };
         if let Some(offset) = offset_opt {
+            if *active_field == Field::Rating {
+                execute!(out, SetCursorStyle::BlinkingUnderScore)?;
+            }
             execute!(
                 out,
-                MoveUp((Field::COUNT - active.index()) as u16),
+                MoveUp((Field::COUNT - active_field.index()) as u16),
                 MoveToColumn((COL_FIELD + offset) as u16),
                 Show
             )?;
