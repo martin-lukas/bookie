@@ -9,7 +9,7 @@ pub struct App {
     pub selected: usize,
     pub active_view: View,
     pub should_refresh: bool,
-    pub add_book_form: Option<BookForm>,
+    pub book_form: Option<BookForm>,
     pub should_quit: bool,
 }
 
@@ -21,7 +21,7 @@ impl App {
             active_view: saved_state.view,
             should_quit: false,
             should_refresh: false,
-            add_book_form: None,
+            book_form: None,
         }
     }
 
@@ -41,10 +41,52 @@ impl App {
         self.should_refresh = true;
     }
 
-    pub fn add_book(&mut self, book: Book) {
-        info!("New book added: {:?}", book);
-        self.books.push(book);
+    pub fn sort_books_by_title(&mut self) {
         self.books.sort_by(|a, b| a.title.cmp(&b.title));
-        self.add_book_form = None;
+    }
+
+    pub fn add_book(&mut self, book: Book) {
+        info!("Book added: {:?}", book);
+        self.books.push(book);
+        self.sort_books_by_title();
+        self.book_form = None;
+    }
+
+    pub fn update_selected_book(&mut self, form: &BookForm) {
+        match self.books.get(self.selected) {
+            Some(original_book) => {
+                let mut updated_book = Book::new(form);
+                updated_book.id = original_book.id;
+                info!("Book updated: {:?}", updated_book);
+                self.books[self.selected] = updated_book;
+                self.sort_books_by_title();
+                self.book_form = None;
+            }
+            None => (),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn test_state() -> SavedState {
+        SavedState::empty()
+    }
+
+    #[test]
+    fn move_selected_clamps_to_zero() {
+        let mut app = App::new(test_state());
+        let mut book_a = Book::empty();
+        book_a.title = "Book A".to_string();
+        let mut book_b = Book::empty();
+        book_b.title = "Book B".to_string();
+        app.books = vec![book_a, book_b];
+        app.selected = 0;
+
+        app.move_selected(-1);
+
+        assert_eq!(app.selected, 0);
     }
 }

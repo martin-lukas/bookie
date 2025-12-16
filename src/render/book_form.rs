@@ -1,9 +1,9 @@
 use crate::{
     domain::{
         app::App,
-        book::STAR,
         book_form::{BookForm, Field},
     },
+    render::STAR,
     util::rpad,
 };
 use crossterm::{
@@ -24,19 +24,22 @@ pub fn render_add_book(app: &App) -> io::Result<()> {
     execute!(out, Clear(ClearType::All))?;
 
     if let Some(BookForm {
+        id: _id,
         title,
         author,
         year,
         rating,
+        note,
         active_field,
         error,
-    }) = &app.add_book_form
+    }) = &app.book_form
     {
         let rows = [
             ("Title:", title.to_string()),
             ("Author:", author.to_string()),
             ("Year:", year.to_string()),
             ("Rating:", STAR.repeat(*rating as usize)),
+            ("Note:", note.to_string()),
         ];
         for (i, (label, value)) in rows.iter().enumerate() {
             let value_style = if i == Field::Rating.index() {
@@ -65,6 +68,7 @@ pub fn render_add_book(app: &App) -> io::Result<()> {
             Field::Author => Some(author.len()),
             Field::Year => Some(year.len()),
             Field::Rating => Some(max(0, *rating as i8 - 1) as usize),
+            Field::Note => Some(note.len()),
         };
         if let Some(offset) = offset_opt {
             if *active_field == Field::Rating {

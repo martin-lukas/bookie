@@ -1,7 +1,4 @@
-use crate::{
-    domain::{app::App, book::STAR},
-    util::rpad,
-};
+use crate::{domain::app::App, render::STAR, util::rpad};
 use crossterm::{
     cursor::MoveToNextLine,
     execute,

@@ -1,24 +1,38 @@
 {
   "books": [
     {
+      "id": "f28f5d41-da47-4a39-94c9-8e87427dcb61",
       "title": "1984",
       "author": "George Orwell",
       "year": 1956,
-      "rating": 4
+      "rating": 4,
+      "note": ""
     },
     {
+      "id": "0fe59e7a-8530-4fe4-b228-b324e64ce7db",
       "title": "Aini The Best Pie",
       "author": "Martini",
       "year": 2025,
-      "rating": 5
+      "rating": 5,
+      "note": ""
     },
     {
-      "title": "Catch 22",
-      "author": "Joseph Heller",
-      "year": 1954,
-      "rating": 5
+      "id": "d7202815-5243-4d69-8a83-1e8b273b7719",
+      "title": "Hello",
+      "author": "sdf",
+      "year": 55,
+      "rating": 3,
+      "note": ""
+    },
+    {
+      "id": "8e21b062-18de-4350-93ea-5cc1e5c125c5",
+      "title": "sdfdsf",
+      "author": "sdf",
+      "year": 55,
+      "rating": 3,
+      "note": ""
     }
   ],
   "view": "BookList",
-  "selected": 1
+  "selected": 2
 }

@@ -10,12 +10,14 @@ use crossterm::{
 };
 use std::io::{self, stdout};
 
+pub const STAR: &str = "⭑"; // ⭐/ ✰ / ★ / ⭑
+
 pub fn render(app: &App) -> io::Result<()> {
     reset_screen(app.should_refresh)?;
     match app.active_view {
         View::BookList => book_list::render_book_list(&app)?,
         View::BookDetail => book_detail::render_book_detail(&app)?,
-        View::AddBook => book_form::render_add_book(&app)?,
+        View::BookForm => book_form::render_add_book(&app)?,
     }
     Ok(())
 }

@@ -10,3 +10,4 @@ fern = "0.7"              # simple file logging
 log = "0.4"
 serde_json = "1.0"
 serde = { version = "1.0.228", features = ["derive"] }
+uuid = { version = "1.19.0", features = ["v4", "serde"] }

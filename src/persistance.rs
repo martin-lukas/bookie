@@ -23,6 +23,14 @@ impl SavedState {
             selected: app.selected,
         }
     }
+
+    pub fn empty() -> Self {
+        Self {
+            books: vec![],
+            view: View::BookList,
+            selected: 0,
+        }
+    }
 }
 
 pub fn load_state() -> io::Result<SavedState> {

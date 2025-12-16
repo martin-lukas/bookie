@@ -1,20 +1,38 @@
+use crate::domain::book::Book;
 use chrono::Datelike;
+use uuid::Uuid;
 
 pub const MAX_RATING: u8 = 5;
-pub const DEFAULT_RATING: u8 = 1;
+pub const MIN_RATING: u8 = 1;
+pub const DEFAULT_RATING: u8 = 3;
 
 #[derive(Debug)]
 pub struct BookForm {
+    pub id: Option<Uuid>,
     pub title: String,
     pub author: String,
     pub year: String,
     pub rating: u8,
+    pub note: String,
     pub active_field: Field,
     pub error: String,
 }
 
 impl BookForm {
-    pub fn move_active(&mut self, delta: i8) {
+    pub fn new(book: &Book) -> Self {
+        Self {
+            id: Some(book.id),
+            title: book.title.to_string(),
+            author: book.author.to_string(),
+            year: book.year.to_string(),
+            rating: book.rating,
+            note: book.note.to_string(),
+            active_field: Field::Rating,
+            error: String::new(),
+        }
+    }
+
+    pub fn move_active_field(&mut self, delta: i8) {
         self.clear_error();
         let mut new_active = self.active_field as i8 + delta;
         new_active = new_active.clamp(0, (Field::COUNT - 1) as i8);
@@ -28,6 +46,7 @@ impl BookForm {
             Field::Author => self.author.push(c),
             Field::Year => self.year.push(c),
             Field::Rating => (),
+            Field::Note => self.note.push(c),
         }
     }
     pub fn remove_active_last_char(&mut self) {
@@ -37,6 +56,7 @@ impl BookForm {
             Field::Author => self.author.pop(),
             Field::Year => self.year.pop(),
             Field::Rating => None,
+            Field::Note => self.note.pop(),
         };
     }
 
@@ -46,7 +66,7 @@ impl BookForm {
         }
         self.clear_error();
         let new_rating = self.rating as i8 + delta;
-        self.rating = new_rating.clamp(0, MAX_RATING as i8) as u8;
+        self.rating = new_rating.clamp(MIN_RATING as i8, MAX_RATING as i8) as u8;
     }
 
     pub fn is_valid(&self) -> Option<String> {
@@ -69,8 +89,11 @@ impl BookForm {
                 current_year
             ));
         }
-        if self.rating > MAX_RATING {
-            return Some(format!("Rating should be at most {}", MAX_RATING));
+        if self.rating < MIN_RATING || self.rating > MAX_RATING {
+            return Some(format!(
+                "Rating should be between {} and {}",
+                MIN_RATING, MAX_RATING
+            ));
         }
         None
     }
@@ -86,10 +109,11 @@ pub enum Field {
     Author,
     Year,
     Rating,
+    Note,
 }
 
 impl Field {
-    pub const COUNT: usize = 4;
+    pub const COUNT: usize = 5;
 
     pub fn index(&self) -> usize {
         match self {
@@ -97,7 +121,12 @@ impl Field {
             Field::Author => 1,
             Field::Year => 2,
             Field::Rating => 3,
+            Field::Note => 4,
         }
+    }
+
+    pub fn get_last() -> Self {
+        Self::get_by_index(Field::COUNT - 1)
     }
 
     pub fn get_by_index(index: usize) -> Self {
@@ -106,7 +135,19 @@ impl Field {
             1 => Field::Author,
             2 => Field::Year,
             3 => Field::Rating,
+            4 => Field::Note,
             _ => panic!("Invalid Field index: {}", index),
         }
     }
+}
+
+pub enum FormAction {
+    None,
+    Quit,
+    AddChar(char),
+    RemoveChar,
+    VerticalMove(i8),
+    ChangeRating(i8),
+    Error(String),
+    Submit,
 }

@@ -1,47 +1,87 @@
-use crate::domain::{app::App, book::Book, book_form::Field, view::View};
-use crossterm::event::{Event, KeyCode, KeyModifiers};
+use crate::domain::view::View;
+use crate::domain::{
+    app::App,
+    book::Book,
+    book_form::{BookForm, Field, FormAction},
+};
+use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 
 pub fn handle_event(app: &mut App, event: Event) {
-    if let Event::Key(key) = event {
+    let Event::Key(key) = event else { return };
+    let next_action = {
         let form = app
-            .add_book_form
-            .as_mut()
-            .expect("Add Book view but form data is not initialized.");
-        match (key.code, key.modifiers) {
-            (KeyCode::Char('c'), mods) if mods.contains(KeyModifiers::CONTROL) => {
-                app.should_quit = true
+            .book_form
+            .as_ref()
+            .expect("Book form data should have been already defined when on the form page");
+        map_event_to_action(key, &form)
+    };
+
+    match next_action {
+        FormAction::Quit => app.should_quit = true,
+        FormAction::AddChar(c) => {
+            if let Some(form) = app.book_form.as_mut() {
+                form.add_active_char(c);
             }
-            (KeyCode::Enter, mods) if mods.is_empty() && form.active_field != Field::Rating => {
-                form.move_active(1)
-            }
-            (KeyCode::Enter, mods) if mods.is_empty() => {
-                if let Some(error_message) = form.is_valid() {
-                    form.error = format!("❗{}❗", error_message);
-                } else {
-                    let book = Book {
-                        title: form.title.to_string(),
-                        author: form.author.to_string(),
-                        year: form.year.parse::<u16>().unwrap(),
-                        rating: form.rating,
-                    };
-                    app.add_book(book);
-                    app.change_view(View::BookList);
-                }
-            }
-            (KeyCode::Backspace, mods) if mods.is_empty() => form.remove_active_last_char(),
-            (KeyCode::Up, mods) if mods.is_empty() => form.move_active(-1),
-            (KeyCode::Down, mods) if mods.is_empty() => form.move_active(1),
-            (KeyCode::Left, mods) if mods.is_empty() => form.change_rating(-1),
-            (KeyCode::Right, mods) if mods.is_empty() => form.change_rating(1),
-            (KeyCode::Char(c), mods) if !mods.contains(KeyModifiers::CONTROL) => {
-                let new_char = if mods.contains(KeyModifiers::SHIFT) {
-                    c.to_ascii_uppercase()
-                } else {
-                    c
-                };
-                form.add_active_char(new_char)
-            }
-            _ => {}
         }
+        FormAction::RemoveChar => {
+            if let Some(form) = app.book_form.as_mut() {
+                form.remove_active_last_char();
+            }
+        }
+        FormAction::ChangeRating(delta) => {
+            if let Some(form) = app.book_form.as_mut() {
+                form.change_rating(delta);
+            }
+        }
+        FormAction::VerticalMove(delta) => {
+            if let Some(form) = app.book_form.as_mut() {
+                form.move_active_field(delta);
+            }
+        }
+        FormAction::Error(error_message) => {
+            if let Some(form) = app.book_form.as_mut() {
+                form.error = error_message;
+            }
+        }
+        FormAction::Submit => {
+            let form = app
+                .book_form
+                .take()
+                .expect("Book form data should have been already defined when on the form page");
+            if form.id.is_none() {
+                let book = Book::new(&form);
+                app.add_book(book);
+            } else {
+                app.update_selected_book(&form);
+            }
+            app.change_view(View::BookList);
+        }
+        FormAction::None => {}
+    }
+}
+
+fn map_event_to_action(key: KeyEvent, form: &BookForm) -> FormAction {
+    match (key.code, key.modifiers) {
+        (KeyCode::Char('c'), mods) if mods.contains(KeyModifiers::CONTROL) => FormAction::Quit,
+        (KeyCode::Enter, _) if form.active_field != Field::get_last() => {
+            FormAction::VerticalMove(1)
+        }
+        (KeyCode::Enter, _) => {
+            if let Some(error_message) = form.is_valid() {
+                FormAction::Error(format!("❗{}❗", error_message))
+            } else {
+                FormAction::Submit
+            }
+        }
+        (KeyCode::Backspace, _) => FormAction::RemoveChar,
+        (KeyCode::Up, _) => FormAction::VerticalMove(-1),
+        (KeyCode::Down, _) => FormAction::VerticalMove(1),
+        (KeyCode::Left, _) => FormAction::ChangeRating(-1),
+        (KeyCode::Right, _) => FormAction::ChangeRating(1),
+        (KeyCode::Char(c), mods) if mods.contains(KeyModifiers::SHIFT) => {
+            FormAction::AddChar(c.to_ascii_uppercase())
+        }
+        (KeyCode::Char(c), _) => FormAction::AddChar(c),
+        _ => FormAction::None,
     }
 }
