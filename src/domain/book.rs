@@ -8,6 +8,7 @@ pub struct Book {
     pub title: String,
     pub author: String,
     pub year: u16,
+    pub pages: u16,
     pub rating: u8,
     pub note: String,
 }
@@ -19,6 +20,7 @@ impl Book {
             title: form.title.to_string(),
             author: form.author.to_string(),
             year: form.year.parse::<u16>().unwrap(),
+            pages: form.pages.parse::<u16>().unwrap(),
             rating: form.rating,
             note: form.note.to_string(),
         }
@@ -30,6 +32,7 @@ impl Book {
             title: String::new(),
             author: String::new(),
             year: 0,
+            pages: 0,
             rating: 1,
             note: String::new(),
         }

@@ -28,6 +28,7 @@ pub fn render_add_book(app: &App) -> io::Result<()> {
         title,
         author,
         year,
+        pages,
         rating,
         note,
         active_field,
@@ -38,6 +39,7 @@ pub fn render_add_book(app: &App) -> io::Result<()> {
             ("Title:", title.to_string()),
             ("Author:", author.to_string()),
             ("Year:", year.to_string()),
+            ("Pages:", pages.to_string()),
             ("Rating:", STAR.repeat(*rating as usize)),
             ("Note:", note.to_string()),
         ];
@@ -67,6 +69,7 @@ pub fn render_add_book(app: &App) -> io::Result<()> {
             Field::Title => Some(title.len()),
             Field::Author => Some(author.len()),
             Field::Year => Some(year.len()),
+            Field::Pages => Some(pages.len()),
             Field::Rating => Some(max(0, *rating as i8 - 1) as usize),
             Field::Note => Some(note.len()),
         };

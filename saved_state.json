@@ -5,34 +5,20 @@
       "title": "1984",
       "author": "George Orwell",
       "year": 1956,
+      "pages": 345,
       "rating": 4,
       "note": ""
     },
     {
-      "id": "0fe59e7a-8530-4fe4-b228-b324e64ce7db",
-      "title": "Aini The Best Pie",
-      "author": "Martini",
+      "id": "9c515762-a17f-4416-b0ca-7cb1994230c8",
+      "title": "Enshittification",
+      "author": "Cory Doctorow",
       "year": 2025,
-      "rating": 5,
-      "note": ""
-    },
-    {
-      "id": "d7202815-5243-4d69-8a83-1e8b273b7719",
-      "title": "Hello",
-      "author": "sdf",
-      "year": 55,
-      "rating": 3,
-      "note": ""
-    },
-    {
-      "id": "8e21b062-18de-4350-93ea-5cc1e5c125c5",
-      "title": "sdfdsf",
-      "author": "sdf",
-      "year": 55,
-      "rating": 3,
-      "note": ""
+      "pages": 204,
+      "rating": 4,
+      "note": "Overall really good, insightful, but it wa kinda dragging towards the end."
     }
   ],
   "view": "BookList",
-  "selected": 2
+  "selected": 1
 }

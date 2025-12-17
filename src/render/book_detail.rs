@@ -26,13 +26,25 @@ pub fn render_book_detail(app: &App) -> io::Result<()> {
         execute!(
             out,
             PrintStyledContent(rpad("Year:", COL_FIELD).bold()),
-            Print(book.year),
+            Print(&book.year),
+            MoveToNextLine(1)
+        )?;
+        execute!(
+            out,
+            PrintStyledContent(rpad("Pages:", COL_FIELD).bold()),
+            Print(&book.pages),
             MoveToNextLine(1)
         )?;
         execute!(
             out,
             PrintStyledContent(rpad("Rating:", COL_FIELD).bold()),
             PrintStyledContent(STAR.repeat(book.rating as usize).yellow()),
+            MoveToNextLine(1)
+        )?;
+        execute!(
+            out,
+            PrintStyledContent(rpad("Note:", COL_FIELD).bold()),
+            Print(&book.note),
             MoveToNextLine(1)
         )?;
 

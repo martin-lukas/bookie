@@ -17,7 +17,7 @@ pub fn handle_event(app: &mut App, event: Event) {
     };
 
     match next_action {
-        FormAction::Quit => app.should_quit = true,
+        FormAction::BackToList => app.change_view(View::BookList),
         FormAction::AddChar(c) => {
             if let Some(form) = app.book_form.as_mut() {
                 form.add_active_char(c);
@@ -62,10 +62,10 @@ pub fn handle_event(app: &mut App, event: Event) {
 
 fn map_event_to_action(key: KeyEvent, form: &BookForm) -> FormAction {
     match (key.code, key.modifiers) {
-        (KeyCode::Char('c'), mods) if mods.contains(KeyModifiers::CONTROL) => FormAction::Quit,
-        (KeyCode::Enter, _) if form.active_field != Field::get_last() => {
-            FormAction::VerticalMove(1)
+        (KeyCode::Char('c'), mods) if mods.contains(KeyModifiers::CONTROL) => {
+            FormAction::BackToList
         }
+        (KeyCode::Tab, _) => FormAction::VerticalMove(1),
         (KeyCode::Enter, _) => {
             if let Some(error_message) = form.is_valid() {
                 FormAction::Error(format!("❗{}❗", error_message))

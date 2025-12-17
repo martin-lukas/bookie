@@ -22,6 +22,7 @@ pub fn handle_event(app: &mut App, event: Event) {
                     title: String::new(),
                     author: String::new(),
                     year: String::new(),
+                    pages: String::new(),
                     rating: DEFAULT_RATING,
                     note: String::new(),
                     active_field: Field::Title,

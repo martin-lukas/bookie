@@ -12,6 +12,7 @@ pub struct BookForm {
     pub title: String,
     pub author: String,
     pub year: String,
+    pub pages: String,
     pub rating: u8,
     pub note: String,
     pub active_field: Field,
@@ -25,6 +26,7 @@ impl BookForm {
             title: book.title.to_string(),
             author: book.author.to_string(),
             year: book.year.to_string(),
+            pages: book.pages.to_string(),
             rating: book.rating,
             note: book.note.to_string(),
             active_field: Field::Rating,
@@ -45,6 +47,7 @@ impl BookForm {
             Field::Title => self.title.push(c),
             Field::Author => self.author.push(c),
             Field::Year => self.year.push(c),
+            Field::Pages => self.pages.push(c),
             Field::Rating => (),
             Field::Note => self.note.push(c),
         }
@@ -55,6 +58,7 @@ impl BookForm {
             Field::Title => self.title.pop(),
             Field::Author => self.author.pop(),
             Field::Year => self.year.pop(),
+            Field::Pages => self.pages.pop(),
             Field::Rating => None,
             Field::Note => self.note.pop(),
         };
@@ -108,25 +112,23 @@ pub enum Field {
     Title,
     Author,
     Year,
+    Pages,
     Rating,
     Note,
 }
 
 impl Field {
-    pub const COUNT: usize = 5;
+    pub const COUNT: usize = 6;
 
     pub fn index(&self) -> usize {
         match self {
             Field::Title => 0,
             Field::Author => 1,
             Field::Year => 2,
-            Field::Rating => 3,
-            Field::Note => 4,
+            Field::Pages => 3,
+            Field::Rating => 4,
+            Field::Note => 5,
         }
-    }
-
-    pub fn get_last() -> Self {
-        Self::get_by_index(Field::COUNT - 1)
     }
 
     pub fn get_by_index(index: usize) -> Self {
@@ -134,8 +136,9 @@ impl Field {
             0 => Field::Title,
             1 => Field::Author,
             2 => Field::Year,
-            3 => Field::Rating,
-            4 => Field::Note,
+            3 => Field::Pages,
+            4 => Field::Rating,
+            5 => Field::Note,
             _ => panic!("Invalid Field index: {}", index),
         }
     }
@@ -143,11 +146,11 @@ impl Field {
 
 pub enum FormAction {
     None,
-    Quit,
     AddChar(char),
     RemoveChar,
     VerticalMove(i8),
     ChangeRating(i8),
     Error(String),
+    BackToList,
     Submit,
 }
