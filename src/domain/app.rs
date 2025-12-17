@@ -70,23 +70,30 @@ impl App {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
 
     fn test_state() -> SavedState {
         SavedState::empty()
     }
 
-    #[test]
-    fn move_selected_clamps_to_zero() {
+    #[rstest]
+    #[case(0, 0, 0)]
+    #[case(1, 1, 2)]
+    #[case(2, 1, 2)]
+    #[case(2, 0, 2)]
+    #[case(1, -1, 0)]
+    #[case(0, -1, 0)]
+    fn move_selected_clamps_to_zero(
+        #[case] start_position: usize,
+        #[case] move_by: i64,
+        #[case] end_position: usize,
+    ) {
         let mut app = App::new(test_state());
-        let mut book_a = Book::empty();
-        book_a.title = "Book A".to_string();
-        let mut book_b = Book::empty();
-        book_b.title = "Book B".to_string();
-        app.books = vec![book_a, book_b];
-        app.selected = 0;
+        app.books = vec![Book::empty(), Book::empty(),Book::empty()];
+        app.selected = start_position;
 
-        app.move_selected(-1);
+        app.move_selected(move_by);
 
-        assert_eq!(app.selected, 0);
+        assert_eq!(app.selected, end_position);
     }
 }
