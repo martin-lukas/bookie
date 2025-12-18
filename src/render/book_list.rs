@@ -3,6 +3,7 @@ use crate::{
     render::STAR,
     util::{lpad, rpad},
 };
+use crossterm::cursor::MoveTo;
 use crossterm::{
     cursor::MoveToNextLine,
     execute,
@@ -25,6 +26,10 @@ const TABLE_WIDTH: usize =
 
 pub fn render_book_list(app: &App) -> io::Result<()> {
     let mut out = stdout();
+    let pane = &app.layout.list;
+    let col_start = pane.area.x;
+    let row_start = pane.area.y;
+    execute!(out, MoveTo(col_start, row_start))?;
     execute!(
         out,
         PrintStyledContent(head_row_string().bold()),
@@ -33,7 +38,7 @@ pub fn render_book_list(app: &App) -> io::Result<()> {
         MoveToNextLine(1),
     )?;
 
-    for (i, book) in app.books.iter().enumerate() {
+    for (i, book) in app.books.iter().take(pane.area.y_max as usize).enumerate() {
         if i == app.selected {
             execute!(
                 out,

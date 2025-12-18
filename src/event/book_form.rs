@@ -2,7 +2,7 @@ use crate::domain::view::View;
 use crate::domain::{
     app::App,
     book::Book,
-    book_form::{BookForm, Field, FormAction},
+    book_form::{BookForm, FormAction},
 };
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 
@@ -17,7 +17,7 @@ pub fn handle_event(app: &mut App, event: Event) {
     };
 
     match next_action {
-        FormAction::BackToList => app.change_view(View::BookList),
+        FormAction::BackToList => app.change_detail_view(View::BookList),
         FormAction::AddChar(c) => {
             if let Some(form) = app.book_form.as_mut() {
                 form.add_active_char(c);
@@ -54,7 +54,7 @@ pub fn handle_event(app: &mut App, event: Event) {
             } else {
                 app.update_selected_book(&form);
             }
-            app.change_view(View::BookList);
+            app.change_detail_view(View::BookList);
         }
         FormAction::None => {}
     }

@@ -1,5 +1,5 @@
 use crate::{
-    domain::{book::Book, book_form::BookForm, view::View},
+    domain::{book::Book, book_form::BookForm, layout::Layout, view::View},
     persistance::SavedState,
 };
 use log::info;
@@ -7,18 +7,18 @@ use log::info;
 pub struct App {
     pub books: Vec<Book>,
     pub selected: usize,
-    pub active_view: View,
+    pub layout: Layout,
     pub should_refresh: bool,
     pub book_form: Option<BookForm>,
     pub should_quit: bool,
 }
 
 impl App {
-    pub fn new(saved_state: SavedState) -> App {
+    pub fn new(saved_state: SavedState, layout: Layout) -> App {
         App {
             books: saved_state.books,
             selected: saved_state.selected,
-            active_view: saved_state.view,
+            layout,
             should_quit: false,
             should_refresh: false,
             book_form: None,
@@ -35,10 +35,9 @@ impl App {
         self.selected = new_selected as usize;
     }
 
-    pub fn change_view(&mut self, new_view: View) {
-        info!("View change: {:?} -> {:?}", self.active_view, new_view);
-        self.active_view = new_view;
-        self.should_refresh = true;
+    pub fn change_detail_view(&mut self, new_view: View) {
+        info!("Detail view change: {:?} -> {:?}", self.layout.detail.view, new_view);
+        self.layout.detail.view = new_view;
     }
 
     pub fn sort_books_by_title(&mut self) {
@@ -88,8 +87,8 @@ mod tests {
         #[case] move_by: i64,
         #[case] end_position: usize,
     ) {
-        let mut app = App::new(test_state());
-        app.books = vec![Book::empty(), Book::empty(),Book::empty()];
+        let mut app = App::new(test_state(), Layout::empty());
+        app.books = vec![Book::empty(), Book::empty(), Book::empty()];
         app.selected = start_position;
 
         app.move_selected(move_by);

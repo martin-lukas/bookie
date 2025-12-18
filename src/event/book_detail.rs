@@ -4,7 +4,7 @@ use crossterm::event::{Event, KeyCode, KeyModifiers};
 pub fn handle_event(app: &mut App, event: Event) {
     if let Event::Key(key) = event {
         match (key.code, key.modifiers) {
-            (KeyCode::Backspace, _) => app.change_view(View::BookList),
+            (KeyCode::Backspace, _) => app.change_detail_view(View::BookList),
             (KeyCode::Char('c'), mods) if mods.contains(KeyModifiers::CONTROL) => {
                 app.should_quit = true
             }

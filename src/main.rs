@@ -6,12 +6,15 @@ mod persistance;
 mod render;
 mod util;
 
+use crate::domain::layout::{Pane, Rect};
+use crate::domain::view::View;
 use crate::{
-    domain::app::App,
+    domain::{app::App, layout::Layout},
     event::handle_event,
     exit::{install_panic_hook, TerminalGuard},
     render::render,
 };
+use crossterm::terminal;
 use log::info;
 use std::io;
 
@@ -23,7 +26,18 @@ fn main() -> io::Result<()> {
     info!("BOOKIE STARTED");
 
     let saved_state = persistance::load_state()?;
-    let mut app = App::new(saved_state);
+
+    let (width, height) = terminal::size()?;
+    let layout = Layout {
+        list: Pane::new(View::BookList, Rect::new(0, 0, width, height / 2 - 1), true),
+        detail: Pane::new(
+            View::BookDetail,
+            Rect::new(0, height / 2, width, height - 1),
+            false,
+        ),
+    };
+
+    let mut app = App::new(saved_state, layout);
 
     loop {
         render(&app)?;
@@ -38,3 +52,5 @@ fn main() -> io::Result<()> {
 
     Ok(())
 }
+
+

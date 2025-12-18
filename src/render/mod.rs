@@ -1,32 +1,35 @@
-pub mod book_form;
 pub mod book_detail;
+pub mod book_form;
 pub mod book_list;
 
+use crate::domain::layout::Rect;
 use crate::domain::{app::App, view::View};
 use crossterm::{
     cursor::{Hide, MoveTo, SetCursorStyle},
     execute,
     terminal::{Clear, ClearType},
 };
-use std::io::{self, stdout};
+use std::io::{self, stdout, Write};
 
 pub const STAR: &str = "⭑"; // ⭐/ ✰ / ★ / ⭑
 
 pub fn render(app: &App) -> io::Result<()> {
-    reset_screen(app.should_refresh)?;
-    match app.active_view {
-        View::BookList => book_list::render_book_list(&app)?,
+    book_list::render_book_list(&app)?;
+    match app.layout.detail.view {
         View::BookDetail => book_detail::render_book_detail(&app)?,
         View::BookForm => book_form::render_add_book(&app)?,
+        View::BookList => panic!("Book list view loaded into detail pane."),
     }
     Ok(())
 }
 
-fn reset_screen(should_refresh: bool) -> io::Result<()> {
-    let mut out = stdout();
-    if should_refresh {
-        execute!(out, Clear(ClearType::All))?;
+pub fn clear_rect(out: &mut impl Write, rect:&Rect) -> io::Result<()> {
+    for i in 0..rect.y_max {
+        execute!(
+            out,
+            MoveTo(rect.x, rect.y + i),
+            Clear(ClearType::CurrentLine),
+        )?;
     }
-
-    execute!(out, MoveTo(0, 0), SetCursorStyle::BlinkingBlock, Hide)
+    Ok(())
 }

@@ -15,7 +15,7 @@ pub fn handle_event(app: &mut App, event: Event) {
             (KeyCode::Char('q'), _) => app.should_quit = true,
             (KeyCode::Up, _) => app.move_selected(-1),
             (KeyCode::Down, _) => app.move_selected(1),
-            (KeyCode::Enter, _) => app.change_view(View::BookDetail),
+            (KeyCode::Enter, _) => app.change_detail_view(View::BookDetail),
             (KeyCode::Char('a'), _) => {
                 app.book_form = Some(BookForm {
                     id: None,
@@ -28,12 +28,12 @@ pub fn handle_event(app: &mut App, event: Event) {
                     active_field: Field::Title,
                     error: String::new(),
                 });
-                app.change_view(View::BookForm);
+                app.change_detail_view(View::BookForm);
             }
             (KeyCode::Char('e'), _) => {
                 if let Some(book) = app.books.get(app.selected) {
                     app.book_form = Some(BookForm::new(&book));
-                    app.change_view(View::BookForm);
+                    app.change_detail_view(View::BookForm);
                 }
             }
             (KeyCode::Char('d'), _) => {
