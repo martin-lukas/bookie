@@ -1,6 +1,7 @@
 pub mod book_detail;
 pub mod book_form;
 pub mod book_list;
+mod table;
 
 use crate::domain::layout::Rect;
 use crate::domain::{app::App, view::View};
@@ -24,7 +25,7 @@ pub fn render(app: &App) -> io::Result<()> {
 }
 
 pub fn clear_rect(out: &mut impl Write, rect:&Rect) -> io::Result<()> {
-    for i in 0..rect.y_max {
+    for i in 0..rect.height {
         execute!(
             out,
             MoveTo(rect.x, rect.y + i),

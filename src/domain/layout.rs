@@ -33,13 +33,13 @@ impl Pane {
 pub struct Rect {
     pub x: u16,
     pub y: u16,
-    pub x_max: u16,
-    pub y_max: u16,
+    pub width: u16,
+    pub height: u16,
 }
 
 impl Rect {
-    pub fn new(x: u16, y: u16, x_max: u16, y_max: u16) -> Self {
-        Self { x, y, x_max, y_max }
+    pub fn new(x: u16, y: u16, width: u16, height: u16) -> Self {
+        Self { x, y, width, height }
     }
 
     pub fn empty() -> Self {
