@@ -6,7 +6,7 @@ pub const MAX_RATING: u8 = 5;
 pub const MIN_RATING: u8 = 1;
 pub const DEFAULT_RATING: u8 = 3;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct BookForm {
     pub id: Option<Uuid>,
     pub title: String,
@@ -34,6 +34,20 @@ impl BookForm {
         }
     }
 
+    pub fn empty() -> Self {
+        Self {
+            id: None,
+            title: String::new(),
+            author: String::new(),
+            year: String::new(),
+            pages: String::new(),
+            rating: DEFAULT_RATING,
+            note: String::new(),
+            active_field: Field::Title,
+            error: String::new(),
+        }
+    }
+
     pub fn move_active_field(&mut self, delta: i8) {
         self.clear_error();
         let mut new_active = self.active_field as i8 + delta;
@@ -52,6 +66,7 @@ impl BookForm {
             Field::Note => self.note.push(c),
         }
     }
+
     pub fn remove_active_last_char(&mut self) {
         self.clear_error();
         match self.active_field {

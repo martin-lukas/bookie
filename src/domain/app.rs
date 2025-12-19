@@ -1,68 +1,87 @@
 use crate::{
-    domain::{book::Book, book_form::BookForm, layout::Layout, view::View},
+    domain::{book::Book, book_form::BookForm, layout::Layout, layout::Pane, view::View},
     persistance::SavedState,
 };
 use log::info;
+use std::collections::HashMap;
+use uuid::Uuid;
 
 pub struct App {
     pub books: Vec<Book>,
-    pub selected: usize,
     pub layout: Layout,
+    pub view_map: HashMap<Pane, View>,
+    pub selected: usize,
+    pub book_form: BookForm,
     pub should_refresh: bool,
-    pub book_form: Option<BookForm>,
     pub should_quit: bool,
 }
 
 impl App {
     pub fn new(saved_state: SavedState, layout: Layout) -> App {
+        let mut view_map = HashMap::new();
+        view_map.insert(Pane::Top, View::BookList);
+        view_map.insert(Pane::Bottom, View::BookDetail);
+        let book_form = BookForm::new(&saved_state.books[saved_state.selected]);
         App {
             books: saved_state.books,
-            selected: saved_state.selected,
             layout,
+            view_map,
+            selected: saved_state.selected,
+            book_form,
             should_quit: false,
             should_refresh: false,
-            book_form: None,
         }
     }
 
     pub fn move_selected(&mut self, delta: i64) {
-        let mut new_selected = self.selected as i64 + delta;
-        new_selected = new_selected.clamp(0, (self.books.len() - 1) as i64);
-        info!(
-            "Selected book index change: {} -> {}",
-            self.selected, new_selected
-        );
-        self.selected = new_selected as usize;
+        if self.books.is_empty() {
+            self.selected = 0;
+            return;
+        }
+
+        let max = self.books.len() - 1;
+        if delta.is_negative() {
+            self.selected = self.selected.saturating_sub(delta.unsigned_abs() as usize);
+        } else {
+            self.selected = self.selected.saturating_add(delta as usize);
+        }
+        self.selected = self.selected.min(max);
+
+        self.book_form = BookForm::new(&self.books[self.selected]);
     }
 
-    pub fn change_detail_view(&mut self, new_view: View) {
-        info!("Detail view change: {:?} -> {:?}", self.layout.detail.view, new_view);
-        self.layout.detail.view = new_view;
+    pub fn change_view(&mut self, pane: Pane, view: View) {
+        self.view_map.insert(pane, view);
+    }
+
+    pub fn change_focus(&mut self, focus_to: Pane) {
+        info!(
+            "Focus switch to pane: {:?} -> {:?}",
+            self.layout.focused, focus_to
+        );
+        self.layout.focused = focus_to;
     }
 
     pub fn sort_books_by_title(&mut self) {
         self.books.sort_by(|a, b| a.title.cmp(&b.title));
     }
 
-    pub fn add_book(&mut self, book: Book) {
+    pub fn add_book(&mut self, book: Book) -> Uuid {
         info!("Book added: {:?}", book);
+        let id = book.id.clone();
         self.books.push(book);
         self.sort_books_by_title();
-        self.book_form = None;
+        id
     }
 
-    pub fn update_selected_book(&mut self, form: &BookForm) {
-        match self.books.get(self.selected) {
-            Some(original_book) => {
-                let mut updated_book = Book::new(form);
-                updated_book.id = original_book.id;
-                info!("Book updated: {:?}", updated_book);
-                self.books[self.selected] = updated_book;
-                self.sort_books_by_title();
-                self.book_form = None;
-            }
-            None => (),
-        }
+    pub fn update_selected_book(&mut self, form: &BookForm) -> Uuid {
+        let mut updated_book = Book::new(form);
+        updated_book.id = self.books[self.selected].id;
+        info!("Book updated: {:?}", updated_book);
+        let book_id = updated_book.id.clone();
+        self.books[self.selected] = updated_book;
+        self.sort_books_by_title();
+        book_id
     }
 }
 

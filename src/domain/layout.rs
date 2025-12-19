@@ -1,33 +1,40 @@
-use crate::domain::view::View;
+use crossterm::{
+    cursor::MoveTo,
+    execute,
+    terminal::{Clear, ClearType},
+};
+use std::io::{self, Write};
 
 pub struct Layout {
-    pub list: Pane,
-    pub detail: Pane,
+    pub top: Rect,
+    pub bottom: Rect,
+    pub right: Rect,
+    pub focused: Pane,
 }
 
 impl Layout {
     pub fn empty() -> Self {
         Self {
-            list: Pane::new(View::BookList, Rect::empty(), false),
-            detail: Pane::new(View::BookDetail, Rect::empty(), false),
+            top: Rect::empty(),
+            bottom: Rect::empty(),
+            right: Rect::empty(),
+            focused: Pane::Top,
         }
+    }
+
+    pub fn clear_all(&self, out: &mut impl Write) -> io::Result<()> {
+        self.top.clear(out)?;
+        self.bottom.clear(out)?;
+        self.right.clear(out)?;
+        Ok(())
     }
 }
 
-pub struct Pane {
-    pub view: View,
-    pub area: Rect,
-    pub is_focused: bool,
-}
-
-impl Pane {
-    pub fn new(view: View, area: Rect, is_focused: bool) -> Self {
-        Self {
-            view,
-            area,
-            is_focused,
-        }
-    }
+#[derive(Debug, Eq, Hash, PartialEq)]
+pub enum Pane {
+    Top,
+    Bottom,
+    Right,
 }
 
 pub struct Rect {
@@ -39,10 +46,26 @@ pub struct Rect {
 
 impl Rect {
     pub fn new(x: u16, y: u16, width: u16, height: u16) -> Self {
-        Self { x, y, width, height }
+        Self {
+            x,
+            y,
+            width,
+            height,
+        }
     }
 
     pub fn empty() -> Self {
         Self::new(0, 0, 0, 0)
+    }
+
+    pub fn clear(&self, out: &mut impl Write) -> io::Result<()> {
+        for i in 0..self.height {
+            execute!(
+                out,
+                MoveTo(self.x, self.y + i),
+                Clear(ClearType::CurrentLine),
+            )?;
+        }
+        Ok(())
     }
 }

@@ -2,6 +2,7 @@ use crate::domain::{app::App, view::View};
 use crossterm::event;
 use log::info;
 use std::io;
+use crate::domain::layout::Pane;
 
 mod book_detail;
 mod book_form;
@@ -11,14 +12,17 @@ pub fn handle_event(app: &mut App) -> io::Result<()> {
     app.should_refresh = false;
     let event = event::read()?;
     info!("Event registered: {:?}", event);
-    if app.layout.list.is_focused {
-        book_list::handle_event(app, event);
-    } else if app.layout.detail.is_focused {
-        match app.layout.detail.view {
-            View::BookDetail => book_detail::handle_event(app, event),
-            View::BookForm => book_form::handle_event(app, event),
-            View::BookList => panic!("Book list in detail view."),
+    // TODO: hardcoded views in panes?
+    match app.layout.focused {
+        Pane::Top =>   book_list::handle_event(app, event),
+        Pane::Bottom => {
+            match app.view_map[&app.layout.focused] {
+                View::BookDetail => book_detail::handle_event(app, event),
+                View::AddBookForm | View::EditBookForm => book_form::handle_event(app, event),
+                _ => {}
+            }
         }
+        Pane::Right => {}
     }
 
     Ok(())

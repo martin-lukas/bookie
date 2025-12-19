@@ -6,10 +6,11 @@ mod persistance;
 mod render;
 mod util;
 
-use crate::domain::layout::{Pane, Rect};
-use crate::domain::view::View;
 use crate::{
-    domain::{app::App, layout::Layout},
+    domain::{
+        app::App,
+        layout::{Layout, Pane, Rect},
+    },
     event::handle_event,
     exit::{install_panic_hook, TerminalGuard},
     render::render,
@@ -29,12 +30,10 @@ fn main() -> io::Result<()> {
 
     let (width, height) = terminal::size()?;
     let layout = Layout {
-        list: Pane::new(View::BookList, Rect::new(0, 0, width, height / 2 - 1), true),
-        detail: Pane::new(
-            View::BookDetail,
-            Rect::new(0, height / 2, width, height - 1),
-            false,
-        ),
+        top: Rect::new(0, 0, width, height / 2 - 1),
+        bottom: Rect::new(0, height / 2, width, height - 1),
+        right: Rect::empty(),
+        focused: Pane::Top,
     };
 
     let mut app = App::new(saved_state, layout);
@@ -52,5 +51,3 @@ fn main() -> io::Result<()> {
 
     Ok(())
 }
-
-

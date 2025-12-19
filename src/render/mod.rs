@@ -3,34 +3,32 @@ pub mod book_form;
 pub mod book_list;
 mod table;
 
-use crate::domain::layout::Rect;
+use crate::domain::layout::Pane;
 use crate::domain::{app::App, view::View};
 use crossterm::{
-    cursor::{Hide, MoveTo, SetCursorStyle},
+    cursor::{Hide, SetCursorStyle},
     execute,
-    terminal::{Clear, ClearType},
 };
 use std::io::{self, stdout, Write};
 
 pub const STAR: &str = "⭑"; // ⭐/ ✰ / ★ / ⭑
 
 pub fn render(app: &App) -> io::Result<()> {
-    book_list::render_book_list(&app)?;
-    match app.layout.detail.view {
-        View::BookDetail => book_detail::render_book_detail(&app)?,
-        View::BookForm => book_form::render_add_book(&app)?,
-        View::BookList => panic!("Book list view loaded into detail pane."),
+    let mut out = stdout();
+    if app.should_refresh {
+        app.layout.clear_all(&mut out)?;
     }
-    Ok(())
-}
 
-pub fn clear_rect(out: &mut impl Write, rect:&Rect) -> io::Result<()> {
-    for i in 0..rect.height {
-        execute!(
-            out,
-            MoveTo(rect.x, rect.y + i),
-            Clear(ClearType::CurrentLine),
-        )?;
+    // TODO: hardcoded pane-view pairings?
+    execute!(stdout(), Hide, SetCursorStyle::BlinkingBlock)?;
+    match app.view_map[&Pane::Top] {
+        View::BookList => book_list::render_book_list(&app)?,
+        _ => {}
+    }
+    match app.view_map[&Pane::Bottom] {
+        View::BookDetail => book_detail::render_book_detail(&app)?,
+        View::AddBookForm | View::EditBookForm => book_form::render_book_form(&app)?,
+        _ => {}
     }
     Ok(())
 }

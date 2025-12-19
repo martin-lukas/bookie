@@ -5,16 +5,15 @@ use crossterm::{
     style::{Print, PrintStyledContent, Stylize},
 };
 use std::io::{self, stdout};
-use crate::render::clear_rect;
 
 const COL_FIELD: usize = 8;
 
 pub fn render_book_detail(app: &App) -> io::Result<()> {
     let mut out = stdout();
-    let pane = &app.layout.detail;
-    let col_start = pane.area.x;
-    let row_start = pane.area.y;
-    clear_rect(&mut out, &pane.area)?;
+    let rect = &app.layout.bottom; // TODO: hardcoded?
+    let col_start = rect.x;
+    let row_start = rect.y;
+    rect.clear(&mut out)?;
 
     execute!(out, MoveTo(col_start, row_start))?;
     if let Some(book) = app.books.get(app.selected) {
