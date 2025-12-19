@@ -1,13 +1,17 @@
-use crate::util::{lpad, rpad};
+use crate::{
+    domain::layout::Rect,
+    util::{lpad, rpad},
+};
 use crossterm::{
     cursor::MoveToNextLine,
     execute,
-    style::{Print, PrintStyledContent, Stylize},
+    style::{Color, Print, PrintStyledContent, SetBackgroundColor, SetForegroundColor, Stylize},
 };
 use std::{
     cmp::max,
     io::{self, stdout},
 };
+use unicode_width::UnicodeWidthStr;
 
 pub struct Table {
     header: Vec<TableCell>,
@@ -20,10 +24,10 @@ impl Table {
     pub(crate) fn new(header: Vec<TableCell>, rows: Vec<Vec<TableCell>>) -> Self {
         let col_widths: Vec<usize> = (0..header.len())
             .map(|col| {
-                let header_width = header[col].value.len();
+                let header_width = header[col].value.width();
                 let cell_max_width = rows
                     .iter()
-                    .map(|row| row[col].value.len())
+                    .map(|row| row[col].value.width())
                     .max()
                     .unwrap_or(0);
                 max(header_width, cell_max_width)
@@ -46,85 +50,116 @@ impl Table {
     }
 }
 
+#[derive(Clone)]
 pub struct TableCell {
     value: String,
+    color: Option<Color>,
     align: Align,
 }
 
 impl TableCell {
-    pub(crate) fn new(value: String) -> Self {
+    pub fn new(value: String) -> Self {
         Self {
             value,
+            color: None,
             align: Align::Left,
         }
     }
+
+    pub fn color(mut self, color: Color) -> Self {
+        self.color = Some(color);
+        self
+    }
+
     pub fn align(mut self, align: Align) -> Self {
         self.align = align;
         self
     }
 }
 
+#[derive(Clone)]
 pub enum Align {
     Left,
     Right,
 }
 
-pub fn render_table(table: &Table, active_row: usize) -> io::Result<()> {
+pub fn render_table(table: Table, rect: &Rect, active_row: usize) -> io::Result<()> {
     let mut out = stdout();
 
-    let header_row = (0..table.header.len())
+    let header_cells: Vec<TableCell> = (0..table.header.len())
         .map(|col| {
-            let cell = &table.header[col];
+            let mut cell = table.header[col].clone();
             let col_width = table.col_widths[col];
-            let mut cell_value = match cell.align {
+            let mut padded_value = match cell.align {
                 Align::Left => rpad(&cell.value, col_width),
                 Align::Right => lpad(&cell.value, col_width),
             };
             if col != table.header.len() - 1 {
-                cell_value.push_str(&" ".repeat(table.sep_width));
-                cell_value
-            } else {
-                cell_value
+                padded_value.push_str(&" ".repeat(table.sep_width));
             }
+            cell.value = padded_value;
+            cell
         })
-        .collect::<String>();
-    let table_rows: Vec<String> = (0..table.rows.len())
+        .collect();
+    let table_rows: Vec<Vec<TableCell>> = (0..table.rows.len())
         .map(|row| {
             let row = &table.rows[row];
             (0..row.len())
                 .map(|col| {
-                    let cell = &row[col];
+                    let mut cell = row[col].clone();
                     let col_width = table.col_widths[col];
-                    let mut cell_value = match cell.align {
+                    let mut padded_value = match cell.align {
                         Align::Left => rpad(&cell.value, col_width),
                         Align::Right => lpad(&cell.value, col_width),
                     };
                     if col != row.len() - 1 {
-                        cell_value.push_str(&" ".repeat(table.sep_width));
-                        cell_value
-                    } else {
-                        cell_value
+                        padded_value.push_str(&" ".repeat(table.sep_width));
                     }
+                    cell.value = padded_value;
+                    cell
                 })
-                .collect::<String>()
+                .collect()
         })
         .collect();
 
+    // HEADER
+    for cell in header_cells.iter() {
+        if let Some(color) = cell.color {
+            execute!(out, SetForegroundColor(color))?;
+        }
+        execute!(
+            out,
+            PrintStyledContent(cell.value.to_string().bold()),
+            SetForegroundColor(Color::Reset)
+        )?;
+    }
+    // SEPARATOR
+    let cols_width_sum: usize = table.col_widths.iter().sum();
+    let seps_width_sum: usize = table.sep_width * (table.header.len() - 1);
     execute!(
         out,
-        PrintStyledContent(header_row.to_string().bold()),
         MoveToNextLine(1),
-        Print("-".repeat(header_row.len())),
-        MoveToNextLine(1),
+        Print("-".repeat(cols_width_sum + seps_width_sum)),
+        MoveToNextLine(1)
     )?;
-    for (i, table_row) in table_rows.iter().enumerate() {
+
+    // BODY
+    for (i, row) in table_rows.iter().take(rect.height as usize - 2).enumerate() {
         if i == active_row {
+            execute!(out, SetBackgroundColor(Color::Black))?;
+        }
+        for cell in row.iter() {
+            if let Some(color) = cell.color {
+                execute!(out, SetForegroundColor(color))?;
+            }
             execute!(
                 out,
-                PrintStyledContent(table_row.to_string().bold().yellow())
+                Print(cell.value.to_string()),
+                SetForegroundColor(Color::Reset)
             )?;
-        } else {
-            execute!(out, Print(table_row.to_string()))?;
+        }
+        if i == active_row {
+            execute!(out, SetBackgroundColor(Color::Reset))?;
         }
         execute!(out, MoveToNextLine(1))?;
     }

@@ -16,6 +16,7 @@ use std::{
     cmp::max,
     io::{self, stdout},
 };
+use unicode_width::UnicodeWidthStr;
 
 const COL_FIELD: usize = 8;
 
@@ -66,12 +67,12 @@ pub fn render_add_book(app: &App) -> io::Result<()> {
             )?;
         }
         let offset_opt = match active_field {
-            Field::Title => Some(title.len()),
-            Field::Author => Some(author.len()),
-            Field::Year => Some(year.len()),
-            Field::Pages => Some(pages.len()),
+            Field::Title => Some(title.width()),
+            Field::Author => Some(author.width()),
+            Field::Year => Some(year.width()),
+            Field::Pages => Some(pages.width()),
             Field::Rating => Some(max(0, *rating as i8 - 1) as usize),
-            Field::Note => Some(note.len()),
+            Field::Note => Some(note.width()),
         };
         if let Some(offset) = offset_opt {
             if *active_field == Field::Rating {
