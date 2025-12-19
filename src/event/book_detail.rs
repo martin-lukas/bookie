@@ -1,7 +1,7 @@
-use crate::domain::{app::App, view::View};
+use crate::domain::{model::Model, view::View};
 use crossterm::event::{Event, KeyCode, KeyModifiers};
 
-pub fn handle_event(app: &mut App, event: Event) {
+pub fn handle_event(app: &mut Model, event: Event) {
     if let Event::Key(key) = event {
         match (key.code, key.modifiers) {
             (KeyCode::Char('c'), mods) if mods.contains(KeyModifiers::CONTROL) => {

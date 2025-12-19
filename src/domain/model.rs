@@ -6,7 +6,7 @@ use log::info;
 use std::collections::HashMap;
 use uuid::Uuid;
 
-pub struct App {
+pub struct Model {
     pub books: Vec<Book>,
     pub layout: Layout,
     pub view_map: HashMap<Pane, View>,
@@ -16,14 +16,14 @@ pub struct App {
     pub should_quit: bool,
 }
 
-impl App {
-    pub fn new(saved_state: SavedState, layout: Layout) -> App {
+impl Model {
+    pub fn new(saved_state: SavedState, layout: Layout) -> Model {
         let mut view_map = HashMap::new();
         view_map.insert(Pane::Top, View::BookList);
         view_map.insert(Pane::Bottom, View::BookDetail);
         view_map.insert(Pane::Right, View::BookStats);
         let book_form = BookForm::new(&saved_state.books[saved_state.selected]);
-        App {
+        Model {
             books: saved_state.books,
             layout,
             view_map,
@@ -107,7 +107,7 @@ mod tests {
         #[case] move_by: i64,
         #[case] end_position: usize,
     ) {
-        let mut app = App::new(test_state(), Layout::empty());
+        let mut app = Model::new(test_state(), Layout::empty());
         app.books = vec![Book::empty(), Book::empty(), Book::empty()];
         app.selected = start_position;
 

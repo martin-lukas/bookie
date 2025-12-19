@@ -1,4 +1,4 @@
-use crate::{domain::app::App, render::STAR, util::rpad};
+use crate::{domain::model::Model, render::STAR, util::rpad};
 use crossterm::{
     cursor::{MoveDown, MoveTo, MoveToColumn},
     execute,
@@ -8,7 +8,7 @@ use std::io::{self, stdout};
 
 const COL_FIELD: usize = 8;
 
-pub fn render(app: &App) -> io::Result<()> {
+pub fn render(app: &Model) -> io::Result<()> {
     let mut out = stdout();
     let rect = &app.layout.bottom; // TODO: hardcoded?
     let col_start = rect.x;

@@ -4,7 +4,7 @@ mod book_list;
 mod book_stats;
 mod table;
 
-use crate::domain::{app::App, layout::Pane, view::View};
+use crate::domain::{model::Model, layout::Pane, view::View};
 use crossterm::{
     cursor::{Hide, SetCursorStyle},
     execute,
@@ -13,7 +13,7 @@ use std::io::{self, stdout, Write};
 
 pub const STAR: &str = "⭑"; // ⭐/ ✰ / ★ / ⭑
 
-pub fn render(app: &App) -> io::Result<()> {
+pub fn render(app: &Model) -> io::Result<()> {
     let mut out = stdout();
     if app.should_refresh {
         app.layout.clear_all(&mut out)?;
@@ -27,7 +27,7 @@ pub fn render(app: &App) -> io::Result<()> {
     Ok(())
 }
 
-fn render_top(app: &App) -> io::Result<()> {
+fn render_top(app: &Model) -> io::Result<()> {
     // TODO: hardcoded pane-view pairings?
     match app.view_map[&Pane::Top] {
         View::BookList => book_list::render(&app)?,
@@ -36,7 +36,7 @@ fn render_top(app: &App) -> io::Result<()> {
     Ok(())
 }
 
-fn render_bottom(app: &App) -> io::Result<()> {
+fn render_bottom(app: &Model) -> io::Result<()> {
     // TODO: hardcoded pane-view pairings?
     match app.view_map[&Pane::Bottom] {
         View::BookDetail => book_detail::render(&app)?,
@@ -46,7 +46,7 @@ fn render_bottom(app: &App) -> io::Result<()> {
     Ok(())
 }
 
-fn render_right(app: &App) -> io::Result<()> {
+fn render_right(app: &Model) -> io::Result<()> {
     // TODO: hardcoded pane-view pairings?
     match app.view_map[&Pane::Right] {
         View::BookStats => book_stats::render(&app)?,

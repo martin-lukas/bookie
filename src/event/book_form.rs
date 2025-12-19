@@ -2,14 +2,14 @@ use std::ops::Index;
 use crate::domain::layout::Pane;
 use crate::domain::view::View;
 use crate::domain::{
-    app::App,
+    model::Model,
     book::Book,
     book_form::{BookForm, FormAction},
 };
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use uuid::Uuid;
 
-pub fn handle_event(app: &mut App, event: Event) {
+pub fn handle_event(app: &mut Model, event: Event) {
     let Event::Key(key) = event else { return };
     let next_action = {
         let form = &app.book_form;
@@ -44,7 +44,7 @@ fn map_event_to_action(key: KeyEvent, form: &BookForm) -> FormAction {
     }
 }
 
-fn handle_next_action(app: &mut App, next_action: FormAction) {
+fn handle_next_action(app: &mut Model, next_action: FormAction) {
     match next_action {
         FormAction::BackToList => {
             app.change_view(Pane::Bottom, View::BookDetail);

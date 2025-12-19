@@ -1,6 +1,6 @@
 use crate::{
     domain::{
-        app::App,
+        model::Model,
         book_form::{BookForm, Field},
     },
     render::STAR,
@@ -19,7 +19,7 @@ use unicode_width::UnicodeWidthStr;
 
 const COL_FIELD: usize = 8;
 
-pub fn render(app: &App) -> io::Result<()> {
+pub fn render(app: &Model) -> io::Result<()> {
     let mut out = stdout();
     let rect = &app.layout.bottom;
     rect.clear(&mut out)?;

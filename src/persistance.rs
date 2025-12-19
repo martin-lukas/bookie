@@ -1,4 +1,4 @@
-use crate::domain::{app::App, book::Book, view::View};
+use crate::domain::{model::Model, book::Book, view::View};
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::{
@@ -16,7 +16,7 @@ pub struct SavedState {
 }
 
 impl SavedState {
-    pub fn new(app: App) -> Self {
+    pub fn new(app: Model) -> Self {
         Self {
             books: app.books,
             view: View::BookList,
@@ -40,7 +40,7 @@ pub fn load_state() -> io::Result<SavedState> {
     Ok(saved_state)
 }
 
-pub fn save_state(app: App) -> io::Result<()> {
+pub fn save_state(app: Model) -> io::Result<()> {
     let saved_state = SavedState::new(app);
     let json = serde_json::to_string_pretty(&saved_state).expect("Failed to serialize books");
     let mut file = File::create(SAVED_STATE_PATH)?;

@@ -36,9 +36,8 @@ impl Layout {
     }
 
     pub fn render_border_crossings(&self) -> io::Result<()> {
-        let mut out = stdout();
         execute!(
-            out,
+            stdout(),
             MoveTo(self.top.left_border(), self.top.bottom_border()),
             Print("├"),
             MoveTo(self.top.right_border(), self.top.top_border()),

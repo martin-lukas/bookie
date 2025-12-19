@@ -8,7 +8,7 @@ mod util;
 
 use crate::{
     domain::{
-        app::App,
+        model::Model,
         layout::{Layout, Pane, Rect},
     },
     event::handle_event,
@@ -56,7 +56,7 @@ fn main() -> io::Result<()> {
         focused: Pane::Top,
     };
 
-    let mut app = App::new(saved_state, layout);
+    let mut app = Model::new(saved_state, layout);
 
     loop {
         render(&app)?;

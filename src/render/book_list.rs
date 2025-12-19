@@ -1,6 +1,6 @@
 use crate::domain::book::Book;
 use crate::{
-    domain::app::App,
+    domain::model::Model,
     render::{
         table::{Align, Table, TableCell},
         STAR,
@@ -9,7 +9,7 @@ use crate::{
 use crossterm::{cursor::MoveTo, execute, style::Color};
 use std::io::{self, stdout};
 
-pub fn render(app: &App) -> io::Result<()> {
+pub fn render(app: &Model) -> io::Result<()> {
     let mut out = stdout();
     let rect = &app.layout.top; // TODO: Hardcoded?
     execute!(out, MoveTo(rect.x, rect.y))?;

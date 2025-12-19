@@ -1,4 +1,4 @@
-use crate::domain::{app::App, view::View};
+use crate::domain::{model::Model, view::View};
 use crossterm::event;
 use log::info;
 use std::io;
@@ -8,7 +8,7 @@ mod book_detail;
 mod book_form;
 mod book_list;
 
-pub fn handle_event(app: &mut App) -> io::Result<()> {
+pub fn handle_event(app: &mut Model) -> io::Result<()> {
     app.should_refresh = false;
     let event = event::read()?;
     info!("Event registered: {:?}", event);

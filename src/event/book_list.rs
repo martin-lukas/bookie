@@ -1,5 +1,5 @@
 use crate::domain::{
-    app::App,
+    model::Model,
     book_form::BookForm,
     view::View,
 };
@@ -7,7 +7,7 @@ use crossterm::event::{Event, KeyCode, KeyModifiers};
 use std::cmp::max;
 use crate::domain::layout::Pane;
 
-pub fn handle_event(app: &mut App, event: Event) {
+pub fn handle_event(app: &mut Model, event: Event) {
     if let Event::Key(key) = event {
         match (key.code, key.modifiers) {
             (KeyCode::Char('c'), mods) if mods.contains(KeyModifiers::CONTROL) => {
