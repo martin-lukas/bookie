@@ -19,7 +19,7 @@ use unicode_width::UnicodeWidthStr;
 
 const COL_FIELD: usize = 8;
 
-pub fn render_book_form(app: &App) -> io::Result<()> {
+pub fn render(app: &App) -> io::Result<()> {
     let mut out = stdout();
     let rect = &app.layout.bottom;
     rect.clear(&mut out)?;

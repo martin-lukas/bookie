@@ -21,6 +21,7 @@ impl App {
         let mut view_map = HashMap::new();
         view_map.insert(Pane::Top, View::BookList);
         view_map.insert(Pane::Bottom, View::BookDetail);
+        view_map.insert(Pane::Right, View::BookStats);
         let book_form = BookForm::new(&saved_state.books[saved_state.selected]);
         App {
             books: saved_state.books,

@@ -3,7 +3,7 @@ use crate::{
     util::{lpad, rpad},
 };
 use crossterm::{
-    cursor::MoveToNextLine,
+    cursor::{MoveDown, MoveToColumn},
     execute,
     style::{Color, Print, PrintStyledContent, SetBackgroundColor, SetForegroundColor, Stylize},
 };
@@ -95,14 +95,14 @@ impl Table {
         }
 
         // SEPARATOR
-        execute!(out, MoveToNextLine(1))?;
+        Self::new_line(rect)?;
         for (i, col_width) in self.col_widths.iter().enumerate() {
             execute!(out, Print("─".repeat(*col_width)))?;
             if i != self.col_widths.len() - 1 {
                 execute!(out, Print("─┼─"))?;
             }
         }
-        execute!(out, MoveToNextLine(1))?;
+        Self::new_line(rect)?;
 
         // BODY
         for (i, row) in table_rows.iter().take(rect.height as usize - 2).enumerate() {
@@ -122,9 +122,14 @@ impl Table {
             if i == active_row {
                 execute!(out, SetBackgroundColor(Color::Reset))?;
             }
-            execute!(out, MoveToNextLine(1))?;
+            Self::new_line(rect)?;
         }
+        Self::new_line(rect)?;
+        Ok(())
+    }
 
+    fn new_line(rect: &Rect) -> io::Result<()> {
+        execute!(stdout(), MoveDown(1), MoveToColumn(rect.x))?;
         Ok(())
     }
 }

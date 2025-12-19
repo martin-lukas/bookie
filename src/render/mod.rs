@@ -1,10 +1,10 @@
-pub mod book_detail;
-pub mod book_form;
-pub mod book_list;
+mod book_detail;
+mod book_form;
+mod book_list;
+mod book_stats;
 mod table;
 
-use crate::domain::layout::Pane;
-use crate::domain::{app::App, view::View};
+use crate::domain::{app::App, layout::Pane, view::View};
 use crossterm::{
     cursor::{Hide, SetCursorStyle},
     execute,
@@ -19,15 +19,37 @@ pub fn render(app: &App) -> io::Result<()> {
         app.layout.clear_all(&mut out)?;
     }
 
-    // TODO: hardcoded pane-view pairings?
     execute!(stdout(), Hide, SetCursorStyle::BlinkingBlock)?;
+    render_top(app)?;
+    render_bottom(app)?;
+    render_right(app)?;
+    app.layout.render_dividers()?;
+    Ok(())
+}
+
+fn render_top(app: &App) -> io::Result<()> {
+    // TODO: hardcoded pane-view pairings?
     match app.view_map[&Pane::Top] {
-        View::BookList => book_list::render_book_list(&app)?,
+        View::BookList => book_list::render(&app)?,
         _ => {}
     }
+    Ok(())
+}
+
+fn render_bottom(app: &App) -> io::Result<()> {
+    // TODO: hardcoded pane-view pairings?
     match app.view_map[&Pane::Bottom] {
-        View::BookDetail => book_detail::render_book_detail(&app)?,
-        View::AddBookForm | View::EditBookForm => book_form::render_book_form(&app)?,
+        View::BookDetail => book_detail::render(&app)?,
+        View::AddBookForm | View::EditBookForm => book_form::render(&app)?,
+        _ => {}
+    }
+    Ok(())
+}
+
+fn render_right(app: &App) -> io::Result<()> {
+    // TODO: hardcoded pane-view pairings?
+    match app.view_map[&Pane::Right] {
+        View::BookStats => book_stats::render(&app)?,
         _ => {}
     }
     Ok(())

@@ -6,4 +6,5 @@ pub enum View {
     BookDetail,
     AddBookForm,
     EditBookForm,
+    BookStats,
 }

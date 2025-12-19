@@ -8,7 +8,7 @@ use std::io::{self, stdout};
 
 const COL_FIELD: usize = 8;
 
-pub fn render_book_detail(app: &App) -> io::Result<()> {
+pub fn render(app: &App) -> io::Result<()> {
     let mut out = stdout();
     let rect = &app.layout.bottom; // TODO: hardcoded?
     let col_start = rect.x;
