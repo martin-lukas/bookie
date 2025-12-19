@@ -1,11 +1,12 @@
 use crate::{
     domain::{
-        model::Model,
         book_form::{BookForm, Field},
+        model::Model,
     },
     render::STAR,
     util::rpad,
 };
+use crossterm::cursor::MoveDown;
 use crossterm::{
     cursor::{MoveTo, MoveToColumn, MoveToNextLine, MoveUp, SetCursorStyle, Show},
     execute,
@@ -55,14 +56,16 @@ pub fn render(app: &Model) -> io::Result<()> {
             out,
             PrintStyledContent(rpad(label, COL_FIELD).bold()),
             PrintStyledContent(value_style),
-            MoveToNextLine(1)
+            MoveDown(1),
+            MoveToColumn(rect.x),
         )?;
     }
 
     if !error.is_empty() {
         execute!(
             out,
-            MoveToNextLine(1),
+            MoveDown(1),
+            MoveToColumn(rect.x),
             PrintStyledContent(error.clone().bold().red()),
             MoveUp(1),
         )?;
@@ -82,7 +85,7 @@ pub fn render(app: &Model) -> io::Result<()> {
     execute!(
         out,
         MoveUp((Field::COUNT - active_field.index()) as u16),
-        MoveToColumn((COL_FIELD + offset) as u16),
+        MoveToColumn(rect.x + (COL_FIELD + offset) as u16),
         Show
     )?;
 

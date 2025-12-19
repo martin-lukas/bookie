@@ -22,7 +22,6 @@ pub fn handle_event(app: &mut Model) -> io::Result<()> {
                 _ => {}
             }
         }
-        Pane::Right => {}
     }
 
     Ok(())

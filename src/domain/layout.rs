@@ -10,7 +10,6 @@ pub struct Layout {
     pub rows: u16,
     pub top: Rect,
     pub bottom: Rect,
-    pub right: Rect,
     pub focused: Pane,
 }
 
@@ -21,16 +20,13 @@ impl Layout {
             rows: 0,
             top: Rect::empty(),
             bottom: Rect::empty(),
-            right: Rect::empty(),
             focused: Pane::Top,
         }
     }
 
     pub fn render_dividers(&self) -> io::Result<()> {
-        let mut out = stdout();
         self.top.render_border()?;
         self.bottom.render_border()?;
-        self.right.render_border()?;
         self.render_border_crossings()?;
         Ok(())
     }
@@ -41,11 +37,11 @@ impl Layout {
             MoveTo(self.top.left_border(), self.top.bottom_border()),
             Print("├"),
             MoveTo(self.top.right_border(), self.top.top_border()),
-            Print("┬"),
+            Print("┐"),
             MoveTo(self.top.right_border(), self.top.bottom_border()),
             Print("┤"),
             MoveTo(self.bottom.right_border(), self.bottom.bottom_border()),
-            Print("┴")
+            Print("┘"),
         )?;
         Ok(())
     }
@@ -53,7 +49,6 @@ impl Layout {
     pub fn clear_all(&self, out: &mut impl Write) -> io::Result<()> {
         self.top.clear(out)?;
         self.bottom.clear(out)?;
-        self.right.clear(out)?;
         Ok(())
     }
 }
@@ -62,7 +57,6 @@ impl Layout {
 pub enum Pane {
     Top,
     Bottom,
-    Right,
 }
 
 pub struct Rect {
@@ -133,8 +127,8 @@ impl Rect {
 
     pub fn clear(&self, out: &mut impl Write) -> io::Result<()> {
         execute!(out, ResetColor, SetAttribute(Attribute::Reset))?;
-        for row in 0..self.height {
-            for col in 0..self.width {
+        for row in 0..self.height - 1 {
+            for col in 0..self.width - 1 {
                 execute!(out, MoveTo(self.x + col, self.y + row), Print(" "))?;
             }
         }

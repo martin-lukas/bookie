@@ -17,8 +17,17 @@
       "pages": 204,
       "rating": 4,
       "note": "Overall really good, insightful, but it wa kinda dragging towards the end."
+    },
+    {
+      "id": "79ad0a6b-4669-4f0a-af8c-89dbfb4d6ec9",
+      "title": "Hello",
+      "author": "Hi",
+      "year": 2000,
+      "pages": 33,
+      "rating": 5,
+      "note": ""
     }
   ],
   "view": "BookList",
-  "selected": 1
+  "selected": 2
 }

@@ -20,7 +20,6 @@ use log::info;
 use std::io;
 
 const PANE_BORDER: u16 = 1;
-const RIGHT_PANE_WIDTH: u16 = 30;
 
 fn main() -> io::Result<()> {
     install_panic_hook();
@@ -38,20 +37,14 @@ fn main() -> io::Result<()> {
         top: Rect::new(
             PANE_BORDER,
             PANE_BORDER,
-            cols - RIGHT_PANE_WIDTH - PANE_BORDER,
+            cols - PANE_BORDER,
             rows / 2,
         ),
         bottom: Rect::new(
             PANE_BORDER,
             rows / 2 + PANE_BORDER,
-            cols - RIGHT_PANE_WIDTH - PANE_BORDER,
+            cols - PANE_BORDER,
             rows / 2,
-        ),
-        right: Rect::new(
-            cols - RIGHT_PANE_WIDTH,
-            PANE_BORDER,
-            RIGHT_PANE_WIDTH,
-            rows - PANE_BORDER,
         ),
         focused: Pane::Top,
     };

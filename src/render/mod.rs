@@ -1,7 +1,6 @@
 mod book_detail;
 mod book_form;
 mod book_list;
-mod book_stats;
 mod table;
 
 use crate::domain::{model::Model, layout::Pane, view::View};
@@ -20,10 +19,9 @@ pub fn render(app: &Model) -> io::Result<()> {
     }
 
     execute!(stdout(), Hide, SetCursorStyle::BlinkingBlock)?;
+    app.layout.render_dividers()?;
     render_top(app)?;
     render_bottom(app)?;
-    render_right(app)?;
-    app.layout.render_dividers()?;
     Ok(())
 }
 
@@ -41,15 +39,6 @@ fn render_bottom(app: &Model) -> io::Result<()> {
     match app.view_map[&Pane::Bottom] {
         View::BookDetail => book_detail::render(&app)?,
         View::AddBookForm | View::EditBookForm => book_form::render(&app)?,
-        _ => {}
-    }
-    Ok(())
-}
-
-fn render_right(app: &Model) -> io::Result<()> {
-    // TODO: hardcoded pane-view pairings?
-    match app.view_map[&Pane::Right] {
-        View::BookStats => book_stats::render(&app)?,
         _ => {}
     }
     Ok(())
