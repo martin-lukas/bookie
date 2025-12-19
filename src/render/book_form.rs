@@ -20,9 +20,9 @@ use unicode_width::UnicodeWidthStr;
 
 const COL_FIELD: usize = 8;
 
-pub fn render(app: &Model) -> io::Result<()> {
+pub fn render(model: &Model) -> io::Result<()> {
     let mut out = stdout();
-    let rect = &app.layout.bottom;
+    let rect = &model.layout.bottom;
     rect.clear(&mut out)?;
 
     let BookForm {
@@ -35,7 +35,7 @@ pub fn render(app: &Model) -> io::Result<()> {
         note,
         active_field,
         error,
-    } = &app.book_form;
+    } = &model.book_form;
     let rows = [
         ("Title:", title.to_string()),
         ("Author:", author.to_string()),

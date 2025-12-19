@@ -8,15 +8,15 @@ use std::io::{self, stdout};
 
 const COL_FIELD: usize = 8;
 
-pub fn render(app: &Model) -> io::Result<()> {
+pub fn render(model: &Model) -> io::Result<()> {
     let mut out = stdout();
-    let rect = &app.layout.bottom; // TODO: hardcoded?
+    let rect = &model.layout.bottom; // TODO: hardcoded?
     let col_start = rect.x;
     let row_start = rect.y;
     rect.clear(&mut out)?;
 
     execute!(out, MoveTo(col_start, row_start))?;
-    if let Some(book) = app.books.get(app.selected) {
+    if let Some(book) = model.books.get(model.selected) {
         execute!(
             out,
             PrintStyledContent(rpad("Title:", COL_FIELD).bold()),

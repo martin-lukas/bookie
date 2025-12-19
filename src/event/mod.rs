@@ -8,17 +8,17 @@ mod book_detail;
 mod book_form;
 mod book_list;
 
-pub fn handle_event(app: &mut Model) -> io::Result<()> {
-    app.should_refresh = false;
+pub fn handle_event(model: &mut Model) -> io::Result<()> {
+    model.should_refresh = false;
     let event = event::read()?;
     info!("Event registered: {:?}", event);
     // TODO: hardcoded views in panes?
-    match app.layout.focused {
-        Pane::Top =>   book_list::handle_event(app, event),
+    match model.layout.focused {
+        Pane::Top =>   book_list::handle_event(model, event),
         Pane::Bottom => {
-            match app.view_map[&app.layout.focused] {
-                View::BookDetail => book_detail::handle_event(app, event),
-                View::AddBookForm | View::EditBookForm => book_form::handle_event(app, event),
+            match model.view_map[&model.layout.focused] {
+                View::BookDetail => book_detail::handle_event(model, event),
+                View::AddBookForm | View::EditBookForm => book_form::handle_event(model, event),
                 _ => {}
             }
         }

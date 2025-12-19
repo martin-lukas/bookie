@@ -49,18 +49,18 @@ fn main() -> io::Result<()> {
         focused: Pane::Top,
     };
 
-    let mut app = Model::new(saved_state, layout);
+    let mut model = Model::new(saved_state, layout);
 
     loop {
-        render(&app)?;
-        handle_event(&mut app)?;
-        if app.should_quit {
+        render(&model)?;
+        handle_event(&mut model)?;
+        if model.should_quit {
             break;
         }
     }
 
     info!("BOOKIE EXITING");
-    persistance::save_state(app)?;
+    persistance::save_state(model)?;
 
     Ok(())
 }

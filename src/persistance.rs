@@ -16,11 +16,11 @@ pub struct SavedState {
 }
 
 impl SavedState {
-    pub fn new(app: Model) -> Self {
+    pub fn new(model: Model) -> Self {
         Self {
-            books: app.books,
+            books: model.books,
             view: View::BookList,
-            selected: app.selected,
+            selected: model.selected,
         }
     }
 
@@ -40,8 +40,8 @@ pub fn load_state() -> io::Result<SavedState> {
     Ok(saved_state)
 }
 
-pub fn save_state(app: Model) -> io::Result<()> {
-    let saved_state = SavedState::new(app);
+pub fn save_state(model: Model) -> io::Result<()> {
+    let saved_state = SavedState::new(model);
     let json = serde_json::to_string_pretty(&saved_state).expect("Failed to serialize books");
     let mut file = File::create(SAVED_STATE_PATH)?;
     file.write_all(json.as_bytes())?;

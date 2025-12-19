@@ -106,12 +106,12 @@ mod tests {
         #[case] move_by: i64,
         #[case] end_position: usize,
     ) {
-        let mut app = Model::new(test_state(), Layout::empty());
-        app.books = vec![Book::empty(), Book::empty(), Book::empty()];
-        app.selected = start_position;
+        let mut model = Model::new(test_state(), Layout::empty());
+        model.books = vec![Book::empty(), Book::empty(), Book::empty()];
+        model.selected = start_position;
 
-        app.move_selected(move_by);
+        model.move_selected(move_by);
 
-        assert_eq!(app.selected, end_position);
+        assert_eq!(model.selected, end_position);
     }
 }

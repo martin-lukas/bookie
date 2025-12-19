@@ -9,14 +9,14 @@ use crate::{
 use crossterm::{cursor::MoveTo, execute, style::Color};
 use std::io::{self, stdout};
 
-pub fn render(app: &Model) -> io::Result<()> {
+pub fn render(model: &Model) -> io::Result<()> {
     let mut out = stdout();
-    let rect = &app.layout.top; // TODO: Hardcoded?
+    let rect = &model.layout.top; // TODO: Hardcoded?
     execute!(out, MoveTo(rect.x, rect.y))?;
-    Table::new(table_header(), table_body(&app.books))
+    Table::new(table_header(), table_body(&model.books))
         // TODO: max_col_widths - to limit available space in case of long cells
         // .col_widths(vec![4, 45, 39, 4, 5, 6])
-        .render(&rect, app.selected)?;
+        .render(&rect, model.selected)?;
     Ok(())
 }
 
