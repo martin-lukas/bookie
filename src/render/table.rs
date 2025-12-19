@@ -46,41 +46,42 @@ impl Table {
     pub fn render(&self, rect: &Rect, active_row: usize) -> io::Result<()> {
         let mut out = stdout();
 
+        let create_cells = |col: usize, cells: &[TableCell]| {
+            let mut cell = cells[col].clone();
+            let col_width = self.col_widths[col];
+            let mut padded_value = String::new();
+            if col == 0 {
+                padded_value.push_str("│ ");
+            }
+            match cell.align {
+                Align::Left => padded_value.push_str(&rpad(&cell.value, col_width)),
+                Align::Right => padded_value.push_str(&lpad(&cell.value, col_width)),
+            }
+            if col != self.header.len() - 1 {
+                padded_value.push_str(&" │ ");
+            } else {
+                padded_value.push_str(&" │");
+            }
+            cell.value = padded_value;
+            cell
+        };
         let header_cells: Vec<TableCell> = (0..self.header.len())
-            .map(|col| {
-                let mut cell = self.header[col].clone();
-                let col_width = self.col_widths[col];
-                let mut padded_value = match cell.align {
-                    Align::Left => rpad(&cell.value, col_width),
-                    Align::Right => lpad(&cell.value, col_width),
-                };
-                if col != self.header.len() - 1 {
-                    padded_value.push_str(&" │ ");
-                }
-                cell.value = padded_value;
-                cell
-            })
+            .map(|col| create_cells(col, &self.header))
             .collect();
         let table_rows: Vec<Vec<TableCell>> = (0..self.rows.len())
             .map(|row| {
                 let row = &self.rows[row];
-                (0..row.len())
-                    .map(|col| {
-                        let mut cell = row[col].clone();
-                        let col_width = self.col_widths[col];
-                        let mut padded_value = match cell.align {
-                            Align::Left => rpad(&cell.value, col_width),
-                            Align::Right => lpad(&cell.value, col_width),
-                        };
-                        if col != row.len() - 1 {
-                            padded_value.push_str(&" │ ");
-                        }
-                        cell.value = padded_value;
-                        cell
-                    })
-                    .collect()
+                (0..row.len()).map(|col| create_cells(col, &row)).collect()
             })
             .collect();
+
+        execute!(
+            out,
+            Print("┌──"),
+            Print("─".repeat(self.col_widths.len() * 2 + self.col_widths.iter().sum::<usize>())),
+            Print("──┐")
+        )?;
+        Self::new_line(rect)?;
 
         // HEADER
         for cell in header_cells.iter() {
@@ -96,12 +97,14 @@ impl Table {
 
         // SEPARATOR
         Self::new_line(rect)?;
+        execute!(out, Print("├─"))?;
         for (i, col_width) in self.col_widths.iter().enumerate() {
             execute!(out, Print("─".repeat(*col_width)))?;
             if i != self.col_widths.len() - 1 {
                 execute!(out, Print("─┼─"))?;
             }
         }
+        execute!(out, Print("─┤"))?;
         Self::new_line(rect)?;
 
         // BODY
@@ -110,9 +113,10 @@ impl Table {
                 execute!(out, SetBackgroundColor(Color::Black))?;
             }
             for cell in row.iter() {
-                if let Some(color) = cell.color {
-                    execute!(out, SetForegroundColor(color))?;
-                }
+                // TODO: how to color cell now? Without coloring also the border.
+                // if let Some(color) = cell.color {
+                //     execute!(out, SetForegroundColor(color))?;
+                // }
                 execute!(
                     out,
                     Print(cell.value.to_string()),
