@@ -14,7 +14,6 @@ pub fn render_book_stats(model: &Model, frame: &mut Frame, area: Rect) {
         .borders(Borders::ALL)
         .border_style(Style::default().fg(Color::DarkGray));
     frame.render_widget(&block, area);
-
     let inner = block.inner(area);
 
     let chunks = Layout::default()

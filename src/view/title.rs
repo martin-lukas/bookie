@@ -7,7 +7,7 @@ use ratatui::{
 
 pub fn render_title(frame: &mut Frame, area: Rect) {
     let title = Text::from(vec![
-        Line::from(vec![Span::raw(".__  __  __ . ...__")]),
+        Line::from(vec![Span::raw(" __  __  __      __")]),
         Line::from(vec![Span::raw("|__)/  \\/  \\|_/||_ ")]),
         Line::from(vec![Span::raw("|__)\\__/\\__/| \\||__")]),
     ]);

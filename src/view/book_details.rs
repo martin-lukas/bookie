@@ -1,46 +1,56 @@
-use crate::{domain::model::Model, util::rpad, view::STAR};
+use crate::{domain::model::Model, view::STAR};
 use ratatui::{
-    layout::Rect,
-    prelude::{Color, Line, Span, Style, Text},
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
+    prelude::{Color, Line, Style, Text},
     widgets::{Block, Borders, Padding, Paragraph},
     Frame,
 };
+use unicode_width::UnicodeWidthStr;
+
+const LABELS: &[&str] = &["Title:", "Author(s):", "Year:", "Pages:", "Rating:"];
 
 pub fn render_book_details(model: &Model, frame: &mut Frame, area: Rect) {
+    let block = Block::default()
+        .title("Details")
+        .padding(Padding::horizontal(1))
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(Color::DarkGray));
+    frame.render_widget(&block, area);
+    let inner = block.inner(area);
+
+    let chunks = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Length(max_label_width(LABELS) + 1),
+            Constraint::Fill(1),
+        ])
+        .split(inner);
+
     let book = &model.books[model.selected];
 
-    let lines = vec![
-        ("Title:", book.title.to_string()),
-        ("Author(s):", book.authors.join(", ").to_string()),
-        ("Year:", book.year.to_string()),
-        ("Pages:", book.pages.to_string()),
-        ("Rating:", STAR.repeat(book.rating as usize)),
-    ];
-
-    let text = Text::from(
-        lines
-            .iter()
-            .map(|(label, value)| {
-                let value_style = if label == &"Rating:" {
-                    Style::default().fg(Color::LightYellow)
-                } else {
-                    Style::default()
-                };
-                Line::from(vec![
-                    Span::raw(rpad(label, 8).to_string()),
-                    Span::styled(value, value_style),
-                ])
-            })
-            .collect::<Vec<Line>>(),
+    frame.render_widget(
+        Paragraph::new(LABELS.join("\n")),
+        chunks[0],
     );
 
-    let details = Paragraph::new(text).block(
-        Block::default()
-            .title("Details")
-            .padding(Padding::horizontal(1))
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::DarkGray)),
-    );
+    let details = Paragraph::new(
+        Text::from(vec![
+            Line::raw(&book.title),
+            Line::raw(book.authors.join(", ")),
+            Line::raw(book.year.to_string()),
+            Line::raw(book.pages.to_string()),
+            Line::styled(
+                STAR.repeat(book.rating as usize),
+                Style::default().fg(Color::LightYellow),
+            ),
+        ])
+        .alignment(Alignment::Left),
+    )
+    .alignment(Alignment::Left);
 
-    frame.render_widget(details, area);
+    frame.render_widget(details, chunks[1]);
+}
+
+fn max_label_width(labels: &[&str]) -> u16 {
+    labels.iter().map(|l| l.width() as u16).max().unwrap_or(0)
 }
