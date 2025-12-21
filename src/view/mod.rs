@@ -12,7 +12,10 @@ use crate::{
 };
 use ratatui::{prelude::*, Frame};
 
+#[cfg(not(windows))]
 pub const STAR: &str = "⭑"; // ⭐/ ✰ / ★ / ⭑
+#[cfg(windows)]
+pub const STAR: &str = "★"; // ⭐/ ✰ / ★ / ⭑
 
 pub fn view(model: &mut Model, frame: &mut Frame) {
     let title_content_chunks = Layout::default()
