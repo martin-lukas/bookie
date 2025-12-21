@@ -1,16 +1,20 @@
 mod domain;
 mod event;
+mod logging;
 mod persistance;
+mod util;
 mod view;
 
 use crate::{
     domain::model::{Model, RunningState},
     event::{handle_event, update},
+    logging::setup_logger,
     view::view,
 };
 use ratatui::DefaultTerminal;
 
 fn main() -> color_eyre::Result<()> {
+    setup_logger()?;
     color_eyre::install()?;
 
     let terminal = ratatui::init();

@@ -3,7 +3,9 @@
     {
       "id": "f28f5d41-da47-4a39-94c9-8e87427dcb61",
       "title": "1984",
-      "author": "George Orwell",
+      "authors": [
+        "George Orwell"
+      ],
       "year": 1956,
       "pages": 368,
       "rating": 4,
@@ -12,12 +14,14 @@
     {
       "id": "9c515762-a17f-4416-b0ca-7cb1994230c8",
       "title": "Enshittification",
-      "author": "Cory Doctorow",
+      "authors": [
+        "Cory Doctorow"
+      ],
       "year": 2025,
       "pages": 352,
       "rating": 4,
       "note": "Overall really good, insightful."
     }
   ],
-  "selected": 0
+  "selected": 1
 }

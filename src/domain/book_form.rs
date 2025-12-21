@@ -24,7 +24,7 @@ impl BookForm {
         Self {
             id: Some(book.id),
             title: book.title.to_string(),
-            author: book.author.to_string(),
+            author: book.authors.join(", ").to_string(),
             year: book.year.to_string(),
             pages: book.pages.to_string(),
             rating: book.rating,
