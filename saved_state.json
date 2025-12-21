@@ -5,29 +5,19 @@
       "title": "1984",
       "author": "George Orwell",
       "year": 1956,
-      "pages": 345,
+      "pages": 368,
       "rating": 4,
-      "note": ""
+      "note": "Haven't read it in a while."
     },
     {
       "id": "9c515762-a17f-4416-b0ca-7cb1994230c8",
       "title": "Enshittification",
       "author": "Cory Doctorow",
       "year": 2025,
-      "pages": 204,
+      "pages": 352,
       "rating": 4,
-      "note": "Overall really good, insightful, but it wa kinda dragging towards the end."
-    },
-    {
-      "id": "79ad0a6b-4669-4f0a-af8c-89dbfb4d6ec9",
-      "title": "Hello",
-      "author": "Hi",
-      "year": 2000,
-      "pages": 33,
-      "rating": 5,
-      "note": ""
+      "note": "Overall really good, insightful."
     }
   ],
-  "view": "BookList",
-  "selected": 2
+  "selected": 0
 }

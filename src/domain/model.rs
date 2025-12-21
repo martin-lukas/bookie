@@ -1,35 +1,28 @@
-use crate::{
-    domain::{book::Book, book_form::BookForm, layout::Layout, layout::Pane, view::View},
-    persistance::SavedState,
-};
+use crate::domain::{book::Book, book_form::BookForm};
 use log::info;
-use std::collections::HashMap;
+use ratatui::widgets::TableState;
 use uuid::Uuid;
+use crate::persistance::SavedState;
 
 pub struct Model {
     pub books: Vec<Book>,
-    pub layout: Layout,
-    pub view_map: HashMap<Pane, View>,
     pub selected: usize,
     pub book_form: BookForm,
-    pub should_refresh: bool,
-    pub should_quit: bool,
+    pub table_state: TableState,
+    pub running_state: RunningState,
 }
 
 impl Model {
-    pub fn new(saved_state: SavedState, layout: Layout) -> Model {
-        let mut view_map = HashMap::new();
-        view_map.insert(Pane::Top, View::BookList);
-        view_map.insert(Pane::Bottom, View::BookDetail);
-        let book_form = BookForm::new(&saved_state.books[saved_state.selected]);
+    pub fn from(saved_state: SavedState) -> Model {
+        // let book_form = BookForm::new(&saved_state.books[saved_state.selected]);
+        let mut table_state = TableState::default();
+        table_state.select(Some(saved_state.selected));
         Model {
             books: saved_state.books,
-            layout,
-            view_map,
             selected: saved_state.selected,
-            book_form,
-            should_quit: false,
-            should_refresh: false,
+            book_form: BookForm::empty(),
+            table_state,
+            running_state: RunningState::Running,
         }
     }
 
@@ -48,18 +41,6 @@ impl Model {
         self.selected = self.selected.min(max);
 
         self.book_form = BookForm::new(&self.books[self.selected]);
-    }
-
-    pub fn change_view(&mut self, pane: Pane, view: View) {
-        self.view_map.insert(pane, view);
-    }
-
-    pub fn change_focus(&mut self, focus_to: Pane) {
-        info!(
-            "Focus switch to pane: {:?} -> {:?}",
-            self.layout.focused, focus_to
-        );
-        self.layout.focused = focus_to;
     }
 
     pub fn sort_books_by_title(&mut self) {
@@ -85,33 +66,9 @@ impl Model {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use rstest::rstest;
 
-    fn test_state() -> SavedState {
-        SavedState::empty()
-    }
-
-    #[rstest]
-    #[case(0, 0, 0)]
-    #[case(1, 1, 2)]
-    #[case(2, 1, 2)]
-    #[case(2, 0, 2)]
-    #[case(1, -1, 0)]
-    #[case(0, -1, 0)]
-    fn move_selected_clamps_to_zero(
-        #[case] start_position: usize,
-        #[case] move_by: i64,
-        #[case] end_position: usize,
-    ) {
-        let mut model = Model::new(test_state(), Layout::empty());
-        model.books = vec![Book::empty(), Book::empty(), Book::empty()];
-        model.selected = start_position;
-
-        model.move_selected(move_by);
-
-        assert_eq!(model.selected, end_position);
-    }
+#[derive(Debug, PartialEq, Eq)]
+pub enum RunningState {
+    Running,
+    Done,
 }
