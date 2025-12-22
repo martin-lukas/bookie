@@ -1,65 +1,68 @@
-use crate::domain::model::{Model, RunningState};
+use crate::model::model::{Focus, Model, RunningState};
 use ratatui::crossterm::event::{self, Event, KeyCode, KeyModifiers};
 use std::time::Duration;
+use crate::model::book::Book;
 
 #[derive(PartialEq)]
 pub enum Message {
     Quit,
+    // Table messages
     NextBook,
     PreviousBook,
-    NewBook,
+    AddBook,
     EditBook,
     DeleteBook,
+    // Form messages
+    CancelForm,
+    InsertChar(char),
+    DeleteChar,
+    NextFormField,
+    PreviousFormField,
+    SubmitForm,
 }
 
-pub fn handle_event(_: &Model) -> color_eyre::Result<Option<Message>> {
+pub fn handle_event(model: &Model) -> color_eyre::Result<Option<Message>> {
     if event::poll(Duration::from_millis(250))? {
         if let Event::Key(key) = event::read()? {
             if key.kind == event::KeyEventKind::Press {
-                return Ok(handle_key(key));
+                return Ok(handle_key(model, key));
             }
         }
     }
     Ok(None)
 }
 
-fn handle_key(key: event::KeyEvent) -> Option<Message> {
+fn handle_key(model: &Model, key: event::KeyEvent) -> Option<Message> {
+    match model.focus {
+        Focus::Table => handle_table_key(key),
+        Focus::Info => handle_info_key(key),
+    }
+}
+
+fn handle_table_key(key: event::KeyEvent) -> Option<Message> {
     match (key.code, key.modifiers) {
         (KeyCode::Char('c'), mods) if mods.contains(KeyModifiers::CONTROL) => Some(Message::Quit),
         (KeyCode::Char('q'), _) => Some(Message::Quit),
         (KeyCode::Down, _) => Some(Message::NextBook),
         (KeyCode::Up, _) => Some(Message::PreviousBook),
-        (KeyCode::Char('a'), _) => Some(Message::NewBook),
+        (KeyCode::Char('a'), _) => Some(Message::AddBook),
         (KeyCode::Char('e'), _) => Some(Message::EditBook),
         (KeyCode::Char('d'), _) => Some(Message::DeleteBook),
         _ => None,
     }
 }
 
-pub fn update(model: &mut Model, msg: Message) -> Option<Message> {
-    match msg {
-        Message::Quit => {
-            model.running_state = RunningState::Done;
+fn handle_info_key(key: event::KeyEvent) -> Option<Message> {
+    match (key.code, key.modifiers) {
+        (KeyCode::Tab, _) | (KeyCode::Down, _) => Some(Message::NextFormField),
+        (KeyCode::BackTab, _) | (KeyCode::Up, _) => Some(Message::PreviousFormField),
+        (KeyCode::Esc, _) => Some(Message::CancelForm),
+        (KeyCode::Char('c'), mods) if mods.contains(KeyModifiers::CONTROL) => {
+            Some(Message::CancelForm)
         }
-        Message::NextBook => {
-            if model.selected + 1 < model.books.len() {
-                model.selected += 1;
-            }
-            model.table_state.select(Some(model.selected));
-        }
-        Message::PreviousBook => {
-            if model.selected > 0 {
-                model.selected -= 1;
-            }
-            model.table_state.select(Some(model.selected));
-        }
-        Message::NewBook => {}
-        Message::EditBook => {}
-        Message::DeleteBook => {
-            // TODO: before activating - figure out barebones confirmation...
-            model.books.remove(model.selected);
-            model.selected = model.selected.clamp(0, model.books.len() - 1);
-        }
+        (KeyCode::Enter, _) => Some(Message::SubmitForm),
+        (KeyCode::Char(c), _) => Some(Message::InsertChar(c)),
+        (KeyCode::Backspace, _) => Some(Message::DeleteChar),
+        _ => None,
     }
-    None
 }

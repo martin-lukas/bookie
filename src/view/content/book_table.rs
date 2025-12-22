@@ -1,4 +1,4 @@
-use crate::{domain::model::Model, view::STAR};
+use crate::{model::model::Model, view::STAR};
 use ratatui::{
     layout::{Constraint, Rect},
     prelude::{Color, Modifier, Style, Text},
@@ -49,5 +49,5 @@ pub fn render_book_table(model: &mut Model, frame: &mut Frame, area: Rect) {
             .border_style(Style::default().fg(Color::DarkGray)),
     );
 
-    frame.render_stateful_widget(table, area, &mut model.table_state);
+    frame.render_stateful_widget(table, area, &mut model.book_table.table_state);
 }

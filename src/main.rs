@@ -1,14 +1,14 @@
-mod domain;
 mod event;
 mod logging;
+mod model;
 mod persistance;
 mod util;
 mod view;
 
 use crate::{
-    domain::model::{Model, RunningState},
-    event::{handle_event, update},
+    event::handle_event,
     logging::setup_logger,
+    model::model::{Model, RunningState},
     view::view,
 };
 use ratatui::DefaultTerminal;
@@ -32,7 +32,7 @@ fn run(mut terminal: DefaultTerminal) -> color_eyre::Result<()> {
         terminal.draw(|frame| view(&mut model, frame))?;
         let mut current_msg = handle_event(&model)?;
         while current_msg.is_some() {
-            current_msg = update(&mut model, current_msg.unwrap());
+            current_msg = model.update(current_msg.unwrap());
         }
     }
 

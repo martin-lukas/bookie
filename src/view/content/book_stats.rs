@@ -1,4 +1,4 @@
-use crate::domain::model::Model;
+use crate::model::model::Model;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     prelude::{Color, Style},
