@@ -58,6 +58,8 @@ impl Model {
             Message::CancelForm => self.enter_view_mode(),
             Message::InsertChar(c) => self.book_info.form.insert_char(c),
             Message::DeleteChar => self.book_info.form.delete_char(),
+            Message::IncreaseRating => self.book_info.form.increase_rating(),
+            Message::DecreaseRating => self.book_info.form.decrease_rating(),
             Message::NextFormField => self.book_info.form.next_field(),
             Message::PreviousFormField => self.book_info.form.previous_field(),
             Message::SubmitForm => match Book::from(&self.book_info.form) {

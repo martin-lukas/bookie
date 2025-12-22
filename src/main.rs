@@ -1,7 +1,6 @@
 mod event;
 mod logging;
 mod model;
-mod util;
 mod view;
 
 use crate::{

@@ -18,6 +18,8 @@ pub enum Message {
     CancelForm,
     InsertChar(char),
     DeleteChar,
+    IncreaseRating,
+    DecreaseRating,
     NextFormField,
     PreviousFormField,
     SubmitForm,
@@ -66,6 +68,8 @@ fn handle_info_key(key: event::KeyEvent) -> Option<Message> {
         }
         (KeyCode::Enter, _) => Some(Message::SubmitForm),
         (KeyCode::Char(c), _) => Some(Message::InsertChar(c)),
+        (KeyCode::Right, _) => Some(Message::IncreaseRating),
+        (KeyCode::Left, _) => Some(Message::DecreaseRating),
         (KeyCode::Backspace, _) => Some(Message::DeleteChar),
         _ => None,
     }

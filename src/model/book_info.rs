@@ -1,9 +1,8 @@
 use crate::model::book::Book;
-use chrono::Datelike;
 use uuid::Uuid;
 
-pub const MAX_RATING: u8 = 5;
 pub const MIN_RATING: u8 = 1;
+pub const MAX_RATING: u8 = 5;
 pub const DEFAULT_RATING: u8 = 3;
 
 #[derive(Clone)]
@@ -93,6 +92,14 @@ impl Form {
             _ => None,
         };
         ()
+    }
+
+    pub fn increase_rating(&mut self) {
+        self.rating = (self.rating.saturating_add(1)).clamp(MIN_RATING, MAX_RATING)
+    }
+
+    pub fn decrease_rating(&mut self) {
+        self.rating = (self.rating.saturating_sub(1)).clamp(MIN_RATING, MAX_RATING)
     }
 
     pub fn next_field(&mut self) {
