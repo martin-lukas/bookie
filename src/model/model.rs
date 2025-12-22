@@ -61,8 +61,18 @@ impl Model {
             Message::NextFormField => self.book_info.form.next_field(),
             Message::PreviousFormField => self.book_info.form.previous_field(),
             Message::SubmitForm => match Book::from(&self.book_info.form) {
-                Ok(book) => {
-                    self.add_book(book);
+                Ok(mut book) => {
+                    match self.book_info.mode {
+                        book_info::Mode::Add => {
+                            let id = self.add_book(book);
+                            self.select_book_by_id(id);
+                        }
+                        book_info::Mode::Edit => {
+                            let id = self.update_book(&mut book);
+                            self.select_book_by_id(id);
+                        }
+                        book_info::Mode::View => {}
+                    }
                     self.enter_view_mode();
                     self.persist();
                 }
@@ -102,6 +112,13 @@ impl Model {
         &self.books[self.book_table.selected_unsafe()]
     }
 
+    pub fn select_book_by_id(&mut self, id: Uuid) {
+        match self.get_table_position_by_id(id) {
+            Some(position) => self.book_table.select(Some(position)),
+            None => {}
+        }
+    }
+
     pub fn add_book(&mut self, book: Book) -> Uuid {
         info!("Book added: {:?}", book);
         let id = book.id.clone();
@@ -110,17 +127,15 @@ impl Model {
         id
     }
 
-    // TODO: delete?
-    // pub fn update_selected_book(&mut self, form: &book_info::Form) -> Uuid {
-    //     let mut updated_book = Book::from(form);
-    //     let selected = self.book_table.selected_unsafe();
-    //     updated_book.id = self.books[selected].id;
-    //     info!("Book updated: {:?}", updated_book);
-    //     let book_id = updated_book.id.clone();
-    //     self.books[selected] = updated_book;
-    //     self.sort_books_by_title();
-    //     book_id
-    // }
+    pub fn update_book(&mut self, updated_book: &mut Book) -> Uuid {
+        let selected = self.book_table.selected_unsafe();
+        updated_book.id = self.books[selected].id;
+        info!("Book updated: {:?}", updated_book);
+        let book_id = updated_book.id.clone();
+        self.books[selected] = updated_book.to_owned();
+        self.sort_books_by_title();
+        book_id
+    }
 
     fn from(saved_state: SavedState) -> Self {
         Self {
@@ -131,6 +146,10 @@ impl Model {
             focus: Focus::Table,
             running_state: RunningState::Running,
         }
+    }
+
+    fn get_table_position_by_id(&self, book_id: Uuid) -> Option<usize> {
+        self.books.iter().position(|b| b.id == book_id)
     }
 
     fn sort_books_by_title(&mut self) {

@@ -23,4 +23,8 @@ impl State {
     pub fn select_previous(&mut self) {
         self.table_state.select_previous();
     }
+
+    pub fn select(&mut self, index: Option<usize>) {
+        self.table_state.select(index);
+    }
 }
