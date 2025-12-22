@@ -2,7 +2,7 @@ use crate::model::book_info;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Book {
     pub id: Uuid,
     pub title: String,

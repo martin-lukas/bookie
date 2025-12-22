@@ -1,5 +1,6 @@
 use ratatui::widgets::TableState;
 
+#[derive(Clone)]
 pub struct State {
     pub table_state: TableState,
 }

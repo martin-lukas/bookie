@@ -6,7 +6,7 @@ use std::{
     io::Write,
 };
 
-const SAVED_STATE_PATH: &str = "saved_state.json";
+const SAVED_STATE_PATH: &str = "state.json";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SavedState {
@@ -15,9 +15,9 @@ pub struct SavedState {
 }
 
 impl SavedState {
-    pub fn new(model: Model) -> Self {
+    pub fn new(model: &Model) -> Self {
         Self {
-            books: model.books,
+            books: model.books.iter().map(|b| b.clone()).collect(),
             selected: model.book_table.selected_unsafe(),
         }
     }
@@ -31,8 +31,8 @@ pub fn load_state() -> color_eyre::Result<SavedState> {
     Ok(saved_state)
 }
 
-pub fn save_state(model: Model) -> color_eyre::Result<()> {
-    let saved_state = SavedState::new(model);
+pub fn save_state(model: &Model) -> color_eyre::Result<()> {
+    let saved_state = SavedState::new(&model);
     let json = serde_json::to_string_pretty(&saved_state).expect("Failed to save state into JSON");
     let mut file = File::create(SAVED_STATE_PATH)?;
     file.write_all(json.as_bytes())?;

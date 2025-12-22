@@ -7,10 +7,10 @@ use ratatui::{
 };
 use unicode_width::UnicodeWidthStr;
 
-const LABELS: &[&str] = &["Title:", "Author(s):", "Year:", "Pages:", "Rating:"];
+const LABELS: &[&str] = &["Title: ", "Author(s): ", "Year: ", "Pages: ", "Rating: ", "Note: "];
 
 pub fn render_book_info(model: &Model, frame: &mut Frame, area: Rect) {
-    let book = &model.books[model.book_table.selected_unsafe()];
+    let book = model.get_selected_book_unsafe();
 
     let values = vec![
         Line::raw(&book.title),
@@ -21,6 +21,7 @@ pub fn render_book_info(model: &Model, frame: &mut Frame, area: Rect) {
             STAR.repeat(book.rating as usize),
             Style::default().fg(Color::LightYellow),
         ),
+        Line::raw(book.note.to_string()),
     ];
 
     render_book_info_content(LABELS, values, frame, area);
@@ -77,7 +78,7 @@ fn max_label_width(labels: &[&str]) -> u16 {
 
 fn input_line(text: &str, active: bool) -> Line<'_> {
     if active {
-        Line::styled(format!("{}█", text), Style::default().fg(Color::Yellow))
+        Line::styled(format!("{}█", text), Style::default().fg(Color::LightYellow))
     } else {
         Line::raw(text)
     }

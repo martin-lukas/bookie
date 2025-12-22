@@ -6,6 +6,7 @@ pub const MAX_RATING: u8 = 5;
 pub const MIN_RATING: u8 = 1;
 pub const DEFAULT_RATING: u8 = 3;
 
+#[derive(Clone)]
 pub struct State {
     pub mode: Mode,
     pub form: Form,

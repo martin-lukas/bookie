@@ -1,7 +1,6 @@
 mod event;
 mod logging;
 mod model;
-mod persistance;
 mod util;
 mod view;
 
@@ -25,8 +24,7 @@ fn main() -> color_eyre::Result<()> {
 }
 
 fn run(mut terminal: DefaultTerminal) -> color_eyre::Result<()> {
-    let saved_state = persistance::load_state()?;
-    let mut model = Model::from(saved_state);
+    let mut model = Model::load();
 
     while model.running_state != RunningState::Done {
         terminal.draw(|frame| view(&mut model, frame))?;
@@ -36,6 +34,5 @@ fn run(mut terminal: DefaultTerminal) -> color_eyre::Result<()> {
         }
     }
 
-    persistance::save_state(model)?;
     Ok(())
 }
