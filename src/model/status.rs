@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct State {
     pub text: String,
     pub input: String,
@@ -15,8 +15,9 @@ impl State {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub enum Mode {
+    #[default]
     Ok,
     Error(String),
     ConfirmDeleteBook,

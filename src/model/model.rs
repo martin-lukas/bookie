@@ -7,7 +7,7 @@ use crate::{
 use log::info;
 use uuid::Uuid;
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Model {
     pub books: Vec<Book>,
     pub book_table: book_table::State,
@@ -18,8 +18,19 @@ pub struct Model {
 }
 
 impl Model {
+    pub fn from(saved_state: SavedState) -> Self {
+        Self {
+            books: saved_state.books,
+            book_table: book_table::State::new(saved_state.selected),
+            book_info: book_info::State::new(),
+            status: status::State::new(),
+            focus: Focus::Table,
+            running_state: RunningState::Running,
+        }
+    }
+
     pub fn load() -> Self {
-        Self::from(persistance::load_state().expect("Failed to load state."))
+        Self::from(persistance::load().expect("Failed to load state."))
     }
 
     pub fn persist(&self) {
@@ -28,7 +39,7 @@ impl Model {
 
     pub fn reload(&mut self) {
         self.clone_from(&Self::from(
-            persistance::load_state().expect("Failed to reload state."),
+            persistance::load().expect("Failed to reload state."),
         ));
     }
 
@@ -44,14 +55,16 @@ impl Model {
             Message::ConfirmDeleteBook => self.enter_confirm_mode(),
             Message::CancelConfirm => self.enter_view_mode(),
             Message::DeleteBook => {
-                self.books.remove(self.book_table.selected_unsafe());
-                if self.book_table.selected_unsafe() == self.books.len() {
-                    self.book_table.select_previous();
-                    // TODO: what if only 1 book? unselect()?
-                    // model.table_state.select(None);
+                if let Some(book_index) = self.book_table.selected() {
+                    self.books.remove(book_index);
+                    if self.books.is_empty() {
+                        self.book_table.select(None)
+                    } else if book_index == self.books.len() {
+                        self.book_table.select_previous();
+                    }
+                    self.enter_view_mode();
+                    self.persist();
                 }
-                self.enter_view_mode();
-                self.persist();
             }
             Message::AddBook => self.enter_add_mode(),
             Message::EditBook => self.enter_edit_mode(),
@@ -94,9 +107,11 @@ impl Model {
     }
 
     pub fn enter_edit_mode(&mut self) {
-        self.focus = Focus::Info;
-        self.book_info.mode = book_info::Mode::Edit;
-        self.book_info.form = book_info::Form::from(self.get_selected_book_unsafe());
+        if let Some(book) = self.get_selected_book() {
+            self.book_info.form = book_info::Form::from(book);
+            self.focus = Focus::Info;
+            self.book_info.mode = book_info::Mode::Edit;
+        }
     }
 
     pub fn enter_view_mode(&mut self) {
@@ -110,8 +125,8 @@ impl Model {
         self.status.mode = status::Mode::ConfirmDeleteBook;
     }
 
-    pub fn get_selected_book_unsafe(&self) -> &Book {
-        &self.books[self.book_table.selected_unsafe()]
+    pub fn get_selected_book(&self) -> Option<&Book> {
+        self.books.get(self.book_table.selected()?)
     }
 
     pub fn select_book_by_id(&mut self, id: Uuid) {
@@ -130,23 +145,15 @@ impl Model {
     }
 
     pub fn update_book(&mut self, updated_book: &mut Book) -> Uuid {
-        let selected = self.book_table.selected_unsafe();
-        updated_book.id = self.books[selected].id;
-        info!("Book updated: {:?}", updated_book);
-        let book_id = updated_book.id.clone();
-        self.books[selected] = updated_book.to_owned();
-        self.sort_books_by_title();
-        book_id
-    }
-
-    fn from(saved_state: SavedState) -> Self {
-        Self {
-            books: saved_state.books,
-            book_table: book_table::State::new(saved_state.selected),
-            book_info: book_info::State::new(),
-            status: status::State::new(),
-            focus: Focus::Table,
-            running_state: RunningState::Running,
+        if let Some(book_index) = self.book_table.selected() {
+            updated_book.id = self.books[book_index].id;
+            info!("Book updated: {:?}", updated_book);
+            let book_id = updated_book.id.clone();
+            self.books[book_index] = updated_book.to_owned();
+            self.sort_books_by_title();
+            book_id
+        } else {
+            panic!("The book to be updated was not found")
         }
     }
 
@@ -159,15 +166,17 @@ impl Model {
     }
 }
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Default, Eq, PartialEq)]
 pub enum Focus {
+    #[default]
     Table,
     Info,
     Status,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub enum RunningState {
+    #[default]
     Running,
     Done,
 }

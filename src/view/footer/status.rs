@@ -16,13 +16,19 @@ pub fn render_status(model: &Model, frame: &mut Frame, area: Rect) {
         Mode::Error(error) => {
             Line::styled(format!("Error: {}", error), Style::default().fg(Color::Red))
         }
-        Mode::ConfirmDeleteBook => Line::styled(
-            format!(
-                "Do you really want to delete the book '{}'? [y/n]",
-                model.get_selected_book_unsafe().title
+        Mode::ConfirmDeleteBook => match model.get_selected_book() {
+            Some(book) => Line::styled(
+                format!(
+                    "Do you really want to delete the book '{}'? [y/n]",
+                    book.title
+                ),
+                Style::default().fg(Color::LightYellow),
             ),
-            Style::default().fg(Color::LightYellow),
-        ),
+            None => Line::styled(
+                "Book to be deleted was not found",
+                Style::default().fg(Color::Red),
+            ),
+        },
     };
     frame.render_widget(
         Paragraph::new(line).block(Block::default().padding(Padding::horizontal(1))),

@@ -1,19 +1,19 @@
 use ratatui::widgets::TableState;
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct State {
     pub table_state: TableState,
 }
 
 impl State {
-    pub fn new(selected: usize) -> Self {
+    pub fn new(selected: Option<usize>) -> Self {
         let mut table_state = TableState::default();
-        table_state.select(Some(selected));
+        table_state.select(selected);
         Self { table_state }
     }
 
-    pub fn selected_unsafe(&self) -> usize {
-        self.table_state.selected().unwrap()
+    pub fn selected(&self) -> Option<usize> {
+        self.table_state.selected()
     }
 
     pub fn select_next(&mut self) {

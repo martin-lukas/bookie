@@ -5,7 +5,7 @@ pub const MIN_RATING: u8 = 1;
 pub const MAX_RATING: u8 = 5;
 pub const DEFAULT_RATING: u8 = 3;
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct State {
     pub mode: Mode,
     pub form: Form,
@@ -20,14 +20,15 @@ impl State {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub enum Mode {
+    #[default]
     View,
     Add,
     Edit,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Form {
     pub id: Option<Uuid>,
     pub title: String,
