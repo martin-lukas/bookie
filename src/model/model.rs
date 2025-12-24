@@ -1,8 +1,11 @@
-use crate::model::persistance::{self, SavedState};
-use crate::model::status;
 use crate::{
     event::Message,
-    model::{book::Book, book_info, book_table},
+    model::{
+        book::Book,
+        book_info, book_table,
+        persistance::{self, SavedState},
+        status,
+    },
 };
 use log::info;
 use uuid::Uuid;
@@ -19,9 +22,10 @@ pub struct Model {
 
 impl Model {
     pub fn from(saved_state: SavedState) -> Self {
+        let book_count = saved_state.books.len();
         Self {
             books: saved_state.books,
-            book_table: book_table::State::new(saved_state.selected),
+            book_table: book_table::State::new(book_count, saved_state.selected),
             book_info: book_info::State::new(),
             status: status::State::new(),
             focus: Focus::Table,

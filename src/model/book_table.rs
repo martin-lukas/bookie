@@ -1,15 +1,20 @@
-use ratatui::widgets::TableState;
+use ratatui::widgets::{ScrollbarState, TableState};
 
 #[derive(Clone, Default)]
 pub struct State {
     pub table_state: TableState,
+    pub scrollbar_state: ScrollbarState,
 }
 
 impl State {
-    pub fn new(selected: Option<usize>) -> Self {
+    pub fn new(size: usize, selected: Option<usize>) -> Self {
         let mut table_state = TableState::default();
         table_state.select(selected);
-        Self { table_state }
+        let selected = table_state.selected().unwrap_or(0);
+        Self {
+            table_state,
+            scrollbar_state: ScrollbarState::new(size).position(selected),
+        }
     }
 
     pub fn selected(&self) -> Option<usize> {
@@ -18,13 +23,22 @@ impl State {
 
     pub fn select_next(&mut self) {
         self.table_state.select_next();
+        self.sync_scrollbar_position();
     }
 
     pub fn select_previous(&mut self) {
         self.table_state.select_previous();
+        self.sync_scrollbar_position();
     }
 
     pub fn select(&mut self, index: Option<usize>) {
         self.table_state.select(index);
+        self.sync_scrollbar_position();
+    }
+
+    fn sync_scrollbar_position(&mut self) {
+        self.scrollbar_state = self
+            .scrollbar_state
+            .position(self.table_state.selected().unwrap_or(0));
     }
 }
