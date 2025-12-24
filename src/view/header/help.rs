@@ -5,13 +5,15 @@ use ratatui::{
     Frame,
 };
 
-const HELP_LEFT: &[&str] = &["A -> add", "E -> edit", "D -> delete"];
-const HELP_RIGHT: &[&str] = &["F -> find (WIP)", "R -> reload"];
+const HELP_1: &[&str] = &["A: add", "E: edit", "D: delete"];
+const HELP_2: &[&str] = &["←/→: choose item in edit", "↑/↓: diff. field in edit"];
+const HELP_3: &[&str] = &[];
+const HELP_4: &[&str] = &["F: find", "R: reload"];
 
-pub fn render_help_left(frame: &mut Frame, area: Rect) {
+pub fn render_help_1(frame: &mut Frame, area: Rect) {
     with_help_panel(frame, area, |frame, inner| {
         let help = Text::from(
-            HELP_LEFT
+            HELP_1
                 .iter()
                 .map(|h| Line::raw(*h))
                 .collect::<Vec<Line>>(),
@@ -23,10 +25,40 @@ pub fn render_help_left(frame: &mut Frame, area: Rect) {
     });
 }
 
-pub fn render_help_right(frame: &mut Frame, area: Rect) {
+pub fn render_help_2(frame: &mut Frame, area: Rect) {
     with_help_panel(frame, area, |frame, inner| {
         let help = Text::from(
-            HELP_RIGHT
+            HELP_2
+                .iter()
+                .map(|h| Line::raw(*h))
+                .collect::<Vec<Line>>(),
+        );
+        frame.render_widget(
+            Paragraph::new(help).style(Style::default().fg(Color::DarkGray)),
+            inner,
+        );
+    });
+}
+
+pub fn render_help_3(frame: &mut Frame, area: Rect) {
+    with_help_panel(frame, area, |frame, inner| {
+        let help = Text::from(
+            HELP_3
+                .iter()
+                .map(|h| Line::raw(*h))
+                .collect::<Vec<Line>>(),
+        );
+        frame.render_widget(
+            Paragraph::new(help).style(Style::default().fg(Color::DarkGray)),
+            inner,
+        );
+    });
+}
+
+pub fn render_help_4(frame: &mut Frame, area: Rect) {
+    with_help_panel(frame, area, |frame, inner| {
+        let help = Text::from(
+            HELP_4
                 .iter()
                 .map(|h| Line::raw(*h))
                 .collect::<Vec<Line>>(),

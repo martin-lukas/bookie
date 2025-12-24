@@ -11,8 +11,8 @@ pub fn handle_key(key: event::KeyEvent) -> Option<Message> {
         }
         (KeyCode::Enter, _) => Some(Message::SubmitForm),
         (KeyCode::Char(c), _) => Some(Message::InsertChar(c)),
-        (KeyCode::Right, _) => Some(Message::IncreaseRating),
-        (KeyCode::Left, _) => Some(Message::DecreaseRating),
+        (KeyCode::Right, _) => Some(Message::Increase),
+        (KeyCode::Left, _) => Some(Message::Decrease),
         (KeyCode::Backspace, _) => Some(Message::DeleteChar),
         _ => None,
     }

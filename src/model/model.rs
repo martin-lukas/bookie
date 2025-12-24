@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use crate::{
     event::Message,
     model::{
@@ -56,8 +57,20 @@ impl Model {
             Message::CancelForm => self.enter_view_mode(),
             Message::InsertChar(c) => self.book_info.form.insert_char(c),
             Message::DeleteChar => self.book_info.form.delete_char(),
-            Message::IncreaseRating => self.book_info.form.increase_rating(),
-            Message::DecreaseRating => self.book_info.form.decrease_rating(),
+            Message::Increase => {
+                match self.book_info.form.cursor {
+                    4 =>    self.book_info.form.increase_reading_status(),
+                    5 =>    self.book_info.form.increase_rating(),
+                    _ => {}
+                }
+            },
+            Message::Decrease => {
+                match self.book_info.form.cursor {
+                    4 =>    self.book_info.form.decrease_reading_status(),
+                    5 =>    self.book_info.form.decrease_rating(),
+                    _ => {}
+                }
+            },
             Message::NextFormField => self.book_info.form.next_field(),
             Message::PreviousFormField => self.book_info.form.previous_field(),
             Message::SubmitForm => match Book::from(&self.book_info.form) {
@@ -95,6 +108,25 @@ impl Model {
 
     pub fn get_selected_book(&self) -> Option<&Book> {
         self.books.get(self.book_table.selected()?)
+    }
+
+    pub fn books_read(&self) -> usize {
+        self.books.iter().filter(|b| b.is_read()).count()
+    }
+
+    pub fn unique_authors_read(&self) -> usize {
+        self.books
+            .iter()
+            .filter(|b| b.is_read())
+            .flat_map(|b| b.authors.clone())
+            .collect::<HashSet<String>>()
+            .len()
+    }
+
+    pub fn pages_read(&self) -> usize {
+        self.books.iter()
+            .filter(|b| b.is_read())
+            .map(|b| b.pages as usize).sum()
     }
 
     fn enter_add_mode(&mut self) {
@@ -171,7 +203,8 @@ impl Model {
     }
 
     fn sort_books_by_title(&mut self) {
-        self.books.sort_by(|a, b| a.title.cmp(&b.title));
+        self.books
+            .sort_by(|a, b| a.title_normalized().cmp(&b.title_normalized()));
     }
 }
 

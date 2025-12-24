@@ -1,15 +1,16 @@
 {
   "books": [
     {
-      "id": "f28f5d41-da47-4a39-94c9-8e87427dcb61",
-      "title": "1984",
+      "id": "337990b7-0c34-49e5-9224-06df9615cd9f",
+      "title": "Brave New World",
       "authors": [
-        "George Orwell"
+        "Aldous Huxley"
       ],
-      "year": 1956,
-      "pages": 368,
-      "rating": 4,
-      "note": "Haven't read it in a while."
+      "year": 1932,
+      "pages": 288,
+      "reading_status": "ToRead",
+      "rating": 0,
+      "note": ""
     },
     {
       "id": "9c515762-a17f-4416-b0ca-7cb1994230c8",
@@ -19,9 +20,34 @@
       ],
       "year": 2025,
       "pages": 352,
+      "reading_status": "Read",
       "rating": 4,
-      "note": "Overall really good, insightful."
+      "note": "To prevent monopolies - regulation, competition, labor force"
+    },
+    {
+      "id": "69bd40db-e811-467c-817d-7f6d28e2353a",
+      "title": "The Golf Pocket Bible",
+      "authors": [
+        "Jeremy Cartwright"
+      ],
+      "year": 2010,
+      "pages": 192,
+      "reading_status": "Reading",
+      "rating": 0,
+      "note": ""
+    },
+    {
+      "id": "618d5738-f903-429d-bf19-2919631a68e5",
+      "title": "The Karamazov Brothers",
+      "authors": [
+        "Fyodor Dostoevsky"
+      ],
+      "year": 1880,
+      "pages": 1012,
+      "reading_status": "Reading",
+      "rating": 0,
+      "note": ""
     }
   ],
-  "selected": 1
+  "selected": 2
 }

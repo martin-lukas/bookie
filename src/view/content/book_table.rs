@@ -81,7 +81,7 @@ fn create_book_table(books: &Vec<Book>) -> Table<'_> {
     .header(
         Row::new([
             Cell::from("Title"),
-            Cell::from("Author(s)"),
+            Cell::from("Authors"),
             Cell::from("Rating"),
         ])
         .style(

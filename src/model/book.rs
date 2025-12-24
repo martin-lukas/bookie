@@ -1,4 +1,5 @@
 use crate::model::book_info;
+use log::error;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -9,6 +10,7 @@ pub struct Book {
     pub authors: Vec<String>,
     pub year: u16,
     pub pages: u16,
+    pub reading_status: ReadingStatus,
     pub rating: u8,
     pub note: String,
 }
@@ -35,9 +37,6 @@ impl Book {
             .trim()
             .parse::<u8>()
             .map_err(|_| "Rating must be a valid number".to_string())?;
-        if rating == 0 || rating > 5 {
-            return Err("Rating must be between 1 and 5".to_string());
-        }
         let authors: Vec<String> = form
             .authors
             .split(',')
@@ -55,8 +54,52 @@ impl Book {
             authors,
             year,
             pages,
+            reading_status: form.reading_status.clone(),
             rating,
             note,
         })
+    }
+
+    pub fn title_normalized(&self) -> String {
+        self.title
+            .strip_prefix("The ")
+            .or_else(|| self.title.strip_prefix("A "))
+            .or_else(|| self.title.strip_prefix("An "))
+            .unwrap_or(&self.title)
+            .to_lowercase()
+    }
+
+    pub fn is_read(&self) -> bool {
+        self.reading_status == ReadingStatus::Read
+    }
+}
+
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+pub enum ReadingStatus {
+    #[default]
+    ToRead,
+    Reading,
+    Read,
+}
+
+impl ReadingStatus {
+    pub fn index(&self) -> usize {
+        match self {
+            ReadingStatus::ToRead => 0,
+            ReadingStatus::Reading => 1,
+            ReadingStatus::Read => 2,
+        }
+    }
+
+    pub fn from(index: usize) -> Self {
+        match index {
+            0 => ReadingStatus::ToRead,
+            1 => ReadingStatus::Reading,
+            2 => ReadingStatus::Read,
+            _ => {
+                error!("Invalid index for reading status: {index}");
+                panic!("Invalid index for reading status");
+            }
+        }
     }
 }

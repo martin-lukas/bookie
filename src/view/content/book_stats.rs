@@ -4,7 +4,6 @@ use ratatui::{
     widgets::Paragraph,
     Frame,
 };
-use std::collections::HashSet;
 
 pub fn render_book_stats(model: &Model, frame: &mut Frame, area: Rect) {
     with_panel(frame, area, "Stats", |frame, area| {
@@ -13,19 +12,15 @@ pub fn render_book_stats(model: &Model, frame: &mut Frame, area: Rect) {
             .constraints([Constraint::Min(0), Constraint::Fill(1)])
             .split(area);
 
-        frame.render_widget(Paragraph::new("Books:\nAuthors:\nPages:"), chunks[0]);
+        frame.render_widget(Paragraph::new("Books:\nBooks read:\nAuthors read:\nPages read:"), chunks[0]);
 
         frame.render_widget(
             Paragraph::new(format!(
-                "{}\n{}\n{}",
+                "{}\n{}\n{}\n{}",
                 model.books.len(),
-                model
-                    .books
-                    .iter()
-                    .flat_map(|b| b.authors.clone())
-                    .collect::<HashSet<String>>()
-                    .len(),
-                model.books.iter().map(|b| b.pages).sum::<u16>(),
+                model.books_read(),
+                model.unique_authors_read(),
+                model.pages_read(),
             ))
             .alignment(Alignment::Right),
             chunks[1],

@@ -1,9 +1,9 @@
-use crate::model::book::Book;
+use crate::model::book::{Book, ReadingStatus};
 use uuid::Uuid;
 
-pub const MIN_RATING: u8 = 1;
+pub const MIN_RATING: u8 = 0; // haven't read yet
 pub const MAX_RATING: u8 = 5;
-pub const DEFAULT_RATING: u8 = 3;
+pub const DEFAULT_RATING: u8 = 0;
 
 #[derive(Clone, Default)]
 pub struct State {
@@ -35,13 +35,14 @@ pub struct Form {
     pub authors: String,
     pub year: String,
     pub pages: String,
+    pub reading_status: ReadingStatus,
     pub rating: u8,
     pub note: String,
     pub cursor: usize,
     pub error: Option<String>,
 }
 
-const FORM_FIELD_COUNT: usize = 6;
+const FORM_FIELD_COUNT: usize = 7;
 
 impl Form {
     pub fn from(book: &Book) -> Self {
@@ -51,6 +52,7 @@ impl Form {
             authors: book.authors.join(", ").to_string(),
             year: book.year.to_string(),
             pages: book.pages.to_string(),
+            reading_status: book.reading_status.clone(),
             rating: book.rating,
             note: book.note.to_string(),
             cursor: 0,
@@ -65,6 +67,7 @@ impl Form {
             authors: String::new(),
             year: String::new(),
             pages: String::new(),
+            reading_status: ReadingStatus::ToRead,
             rating: DEFAULT_RATING,
             note: String::new(),
             cursor: 0,
@@ -78,7 +81,7 @@ impl Form {
             1 => self.authors.push(c),
             2 => self.year.push(c),
             3 => self.pages.push(c),
-            5 => self.note.push(c),
+            6 => self.note.push(c),
             _ => {}
         }
     }
@@ -89,18 +92,34 @@ impl Form {
             1 => self.authors.pop(),
             2 => self.year.pop(),
             3 => self.pages.pop(),
-            5 => self.note.pop(),
+            6 => self.note.pop(),
             _ => None,
         };
         ()
     }
 
+    pub fn increase_reading_status(&mut self) {
+        if self.cursor == 4 && self.reading_status != ReadingStatus::Read {
+            self.reading_status = ReadingStatus::from(self.reading_status.index() + 1);
+        }
+    }
+
+    pub fn decrease_reading_status(&mut self) {
+        if self.cursor == 4 && self.reading_status != ReadingStatus::ToRead {
+            self.reading_status = ReadingStatus::from(self.reading_status.index() - 1);
+        }
+    }
+
     pub fn increase_rating(&mut self) {
-        self.rating = (self.rating.saturating_add(1)).clamp(MIN_RATING, MAX_RATING)
+        if self.cursor == 5 && self.rating < MAX_RATING {
+            self.rating = self.rating + 1;
+        }
     }
 
     pub fn decrease_rating(&mut self) {
-        self.rating = (self.rating.saturating_sub(1)).clamp(MIN_RATING, MAX_RATING)
+        if self.cursor == 5 && self.rating > MIN_RATING {
+            self.rating = self.rating - 1;
+        }
     }
 
     pub fn next_field(&mut self) {

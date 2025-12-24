@@ -1,10 +1,11 @@
+use crate::model::book::ReadingStatus;
 use crate::{
     model::model::Model,
     view::{with_panel, STAR},
 };
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
-    prelude::{Color, Line, Style, Text},
+    prelude::{Color, Line, Modifier, Span, Style, Text},
     widgets::Paragraph,
     Frame,
 };
@@ -12,9 +13,10 @@ use unicode_width::UnicodeWidthStr;
 
 const LABELS: &[&str] = &[
     "Title: ",
-    "Author(s): ",
+    "Authors: ",
     "Year: ",
     "Pages: ",
+    "Status: ",
     "Rating: ",
     "Note: ",
 ];
@@ -27,6 +29,7 @@ pub fn render_book_info(model: &Model, frame: &mut Frame, area: Rect) {
                 Line::raw(book.authors.join(", ")),
                 Line::raw(book.year.to_string()),
                 Line::raw(book.pages.to_string()),
+                reading_status_line(&book.reading_status),
                 Line::styled(
                     STAR.repeat(book.rating as usize),
                     Style::default().fg(Color::LightYellow),
@@ -50,8 +53,9 @@ pub fn render_book_form(model: &Model, frame: &mut Frame, area: Rect) {
             input_line(&form.authors, form.cursor == 1),
             input_line(&form.year, form.cursor == 2),
             input_line(&form.pages, form.cursor == 3),
-            input_line(&rating_stars, form.cursor == 4),
-            input_line(&form.note, form.cursor == 5),
+            reading_status_line(&form.reading_status),
+            input_line(&rating_stars, form.cursor == 5),
+            input_line(&form.note, form.cursor == 6),
         ];
         render_book_info_content(LABELS, values, frame, area);
     });
@@ -93,6 +97,42 @@ fn render_book_info_empty(frame: &mut Frame, inner: Rect) {
 
 fn max_label_width(labels: &[&str]) -> u16 {
     labels.iter().map(|l| l.width() as u16).max().unwrap_or(0)
+}
+
+fn reading_status_line(status: &ReadingStatus) -> Line<'static> {
+    let active = Style::default()
+        .fg(Color::LightYellow)
+        .add_modifier(Modifier::BOLD);
+    let inactive = Style::default().fg(Color::DarkGray);
+
+    Line::from(vec![
+        Span::styled(
+            "TO READ",
+            if matches!(status, ReadingStatus::ToRead) {
+                active
+            } else {
+                inactive
+            },
+        ),
+        Span::raw(" | "),
+        Span::styled(
+            "READING",
+            if matches!(status, ReadingStatus::Reading) {
+                active
+            } else {
+                inactive
+            },
+        ),
+        Span::raw(" | "),
+        Span::styled(
+            "READ",
+            if matches!(status, ReadingStatus::Read) {
+                active
+            } else {
+                inactive
+            },
+        ),
+    ])
 }
 
 fn input_line(text: &str, active: bool) -> Line<'_> {
