@@ -20,27 +20,12 @@ impl State {
     pub fn selected(&self) -> Option<usize> {
         self.table_state.selected()
     }
-
-    pub fn select_next(&mut self) {
-        self.table_state.select_next();
-        self.sync_scrollbar_position();
-    }
-
-    pub fn select_previous(&mut self) {
-        self.table_state.select_previous();
-        self.sync_scrollbar_position();
-    }
-
-    pub fn select(&mut self, index: Option<usize>) {
-        self.table_state.select(index);
-        self.sync_scrollbar_position();
-    }
-
+    
     pub fn update_scrollbar_length(&mut self, length: usize) {
         self.scrollbar_state = self.scrollbar_state.content_length(length);
     }
 
-    fn sync_scrollbar_position(&mut self) {
+    pub fn sync_scrollbar_position(&mut self) {
         self.scrollbar_state = self
             .scrollbar_state
             .position(self.table_state.selected().unwrap_or(0));

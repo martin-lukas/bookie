@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 use crate::{
     event::Message,
     model::{
@@ -9,6 +8,7 @@ use crate::{
     },
 };
 use log::info;
+use std::collections::HashSet;
 use uuid::Uuid;
 
 #[derive(Clone, Default)]
@@ -44,15 +44,15 @@ impl Model {
             Message::RefreshState => {
                 self.persist();
                 self.reload();
-            },
+            }
             Message::NextBook => {
-                self.book_table.select_next();
+                self.select_table_next();
                 self.persist();
-            },
+            }
             Message::PreviousBook => {
-                self.book_table.select_previous();
+                self.select_table_previous();
                 self.persist();
-            },
+            }
             Message::ConfirmDeleteBook => self.enter_confirm_mode(),
             Message::CancelConfirm => self.enter_view_mode(),
             Message::DeleteBook => {
@@ -67,19 +67,15 @@ impl Model {
             Message::CancelForm => self.enter_view_mode(),
             Message::InsertChar(c) => self.book_info.form.insert_char(c),
             Message::DeleteChar => self.book_info.form.delete_char(),
-            Message::Increase => {
-                match self.book_info.form.cursor {
-                    4 =>    self.book_info.form.increase_reading_status(),
-                    5 =>    self.book_info.form.increase_rating(),
-                    _ => {}
-                }
+            Message::Increase => match self.book_info.form.cursor {
+                4 => self.book_info.form.increase_reading_status(),
+                5 => self.book_info.form.increase_rating(),
+                _ => {}
             },
-            Message::Decrease => {
-                match self.book_info.form.cursor {
-                    4 =>    self.book_info.form.decrease_reading_status(),
-                    5 =>    self.book_info.form.decrease_rating(),
-                    _ => {}
-                }
+            Message::Decrease => match self.book_info.form.cursor {
+                4 => self.book_info.form.decrease_reading_status(),
+                5 => self.book_info.form.decrease_rating(),
+                _ => {}
             },
             Message::NextFormField => self.book_info.form.next_field(),
             Message::PreviousFormField => self.book_info.form.previous_field(),
@@ -134,9 +130,11 @@ impl Model {
     }
 
     pub fn pages_read(&self) -> usize {
-        self.books.iter()
+        self.books
+            .iter()
             .filter(|b| b.is_read())
-            .map(|b| b.pages as usize).sum()
+            .map(|b| b.pages as usize)
+            .sum()
     }
 
     fn enter_add_mode(&mut self) {
@@ -162,6 +160,29 @@ impl Model {
     fn enter_confirm_mode(&mut self) {
         self.focus = Focus::Status;
         self.status.mode = status::Mode::ConfirmDeleteBook;
+    }
+
+    fn select_table_next(&mut self) {
+        if self.book_table.table_state.selected().is_some()
+            && self.book_table.table_state.selected().unwrap() < self.books.len() - 1
+        {
+            self.book_table.table_state.select_next();
+            self.book_table.sync_scrollbar_position();
+        }
+    }
+
+    fn select_table_previous(&mut self) {
+        if self.book_table.table_state.selected().is_some()
+            && self.book_table.table_state.selected().unwrap() > 0
+        {
+            self.book_table.table_state.select_previous();
+            self.book_table.sync_scrollbar_position();
+        }
+    }
+
+    fn select_table(&mut self, index: Option<usize>) {
+        self.book_table.table_state.select(index);
+        self.book_table.sync_scrollbar_position();
     }
 
     fn add_book(&mut self, book: Book) {
@@ -190,9 +211,9 @@ impl Model {
     fn delete_book(&mut self, book_index: usize) {
         self.books.remove(book_index);
         if self.books.is_empty() {
-            self.book_table.select(None)
+            self.select_table(None)
         } else if book_index == self.books.len() {
-            self.book_table.select_previous();
+            self.select_table_previous();
         }
         self.update_scrollbar_length();
     }
@@ -207,7 +228,7 @@ impl Model {
 
     fn select_book_by_id(&mut self, id: Uuid) {
         match self.get_table_position_by_id(id) {
-            Some(position) => self.book_table.select(Some(position)),
+            Some(position) => self.select_table(Some(position)),
             None => {}
         }
     }
