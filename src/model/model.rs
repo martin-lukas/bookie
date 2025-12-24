@@ -38,11 +38,21 @@ impl Model {
         self.book_info.form.clear_error();
         match msg {
             Message::Quit => {
+                self.persist();
                 self.running_state = RunningState::Done;
             }
-            Message::RefreshState => self.reload(),
-            Message::NextBook => self.book_table.select_next(),
-            Message::PreviousBook => self.book_table.select_previous(),
+            Message::RefreshState => {
+                self.persist();
+                self.reload();
+            },
+            Message::NextBook => {
+                self.book_table.select_next();
+                self.persist();
+            },
+            Message::PreviousBook => {
+                self.book_table.select_previous();
+                self.persist();
+            },
             Message::ConfirmDeleteBook => self.enter_confirm_mode(),
             Message::CancelConfirm => self.enter_view_mode(),
             Message::DeleteBook => {

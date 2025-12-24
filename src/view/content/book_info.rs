@@ -29,7 +29,7 @@ pub fn render_book_info(model: &Model, frame: &mut Frame, area: Rect) {
                 Line::raw(book.authors.join(", ")),
                 Line::raw(book.year.to_string()),
                 Line::raw(book.pages.to_string()),
-                reading_status_line(&book.reading_status),
+                reading_status_line(&book.reading_status, true),
                 Line::styled(
                     STAR.repeat(book.rating as usize),
                     Style::default().fg(Color::LightYellow),
@@ -53,7 +53,7 @@ pub fn render_book_form(model: &Model, frame: &mut Frame, area: Rect) {
             input_line(&form.authors, form.cursor == 1),
             input_line(&form.year, form.cursor == 2),
             input_line(&form.pages, form.cursor == 3),
-            reading_status_line(&form.reading_status),
+            reading_status_line(&form.reading_status, form.cursor == 4),
             input_line(&rating_stars, form.cursor == 5),
             input_line(&form.note, form.cursor == 6),
         ];
@@ -99,37 +99,41 @@ fn max_label_width(labels: &[&str]) -> u16 {
     labels.iter().map(|l| l.width() as u16).max().unwrap_or(0)
 }
 
-fn reading_status_line(status: &ReadingStatus) -> Line<'static> {
-    let active = Style::default()
-        .fg(Color::LightYellow)
+fn reading_status_line(status: &ReadingStatus, active: bool) -> Line<'static> {
+    let selected = Style::default()
+        .fg(if active {
+            Color::LightYellow
+        } else {
+            Color::DarkGray
+        })
         .add_modifier(Modifier::BOLD);
-    let inactive = Style::default().fg(Color::DarkGray);
+    let not_selected = Style::default().fg(Color::DarkGray);
 
     Line::from(vec![
         Span::styled(
             "TO READ",
             if matches!(status, ReadingStatus::ToRead) {
-                active
+                selected
             } else {
-                inactive
+                not_selected
             },
         ),
         Span::raw(" | "),
         Span::styled(
             "READING",
             if matches!(status, ReadingStatus::Reading) {
-                active
+                selected
             } else {
-                inactive
+                not_selected
             },
         ),
         Span::raw(" | "),
         Span::styled(
             "READ",
             if matches!(status, ReadingStatus::Read) {
-                active
+                selected
             } else {
-                inactive
+                not_selected
             },
         ),
     ])

@@ -75,7 +75,7 @@ fn create_book_table(books: &Vec<Book>) -> Table<'_> {
         [
             Constraint::Fill(5),
             Constraint::Fill(4),
-            Constraint::Length(6),
+            Constraint::Length(7),
         ],
     )
     .header(
