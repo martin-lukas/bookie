@@ -33,20 +33,6 @@ impl Model {
         }
     }
 
-    pub fn load() -> Self {
-        Self::from(persistance::load().expect("Failed to load state."))
-    }
-
-    pub fn persist(&self) {
-        persistance::save_state(&self).expect("Failed to save state.");
-    }
-
-    pub fn reload(&mut self) {
-        self.clone_from(&Self::from(
-            persistance::load().expect("Failed to reload state."),
-        ));
-    }
-
     pub fn update(&mut self, msg: Message) -> Option<Message> {
         self.book_info.form.clear_error();
         match msg {
@@ -60,12 +46,7 @@ impl Model {
             Message::CancelConfirm => self.enter_view_mode(),
             Message::DeleteBook => {
                 if let Some(book_index) = self.book_table.selected() {
-                    self.books.remove(book_index);
-                    if self.books.is_empty() {
-                        self.book_table.select(None)
-                    } else if book_index == self.books.len() {
-                        self.book_table.select_previous();
-                    }
+                    self.delete_book(book_index);
                     self.enter_view_mode();
                     self.persist();
                 }
@@ -82,14 +63,8 @@ impl Model {
             Message::SubmitForm => match Book::from(&self.book_info.form) {
                 Ok(mut book) => {
                     match self.book_info.mode {
-                        book_info::Mode::Add => {
-                            let id = self.add_book(book);
-                            self.select_book_by_id(id);
-                        }
-                        book_info::Mode::Edit => {
-                            let id = self.update_book(&mut book);
-                            self.select_book_by_id(id);
-                        }
+                        book_info::Mode::Add => self.add_book(book),
+                        book_info::Mode::Edit => self.update_book(&mut book),
                         book_info::Mode::View => {}
                     }
                     self.enter_view_mode();
@@ -104,13 +79,31 @@ impl Model {
         None
     }
 
-    pub fn enter_add_mode(&mut self) {
+    pub fn load() -> Self {
+        Self::from(persistance::load().expect("Failed to load state."))
+    }
+
+    pub fn persist(&self) {
+        persistance::save_state(&self).expect("Failed to save state.");
+    }
+
+    pub fn reload(&mut self) {
+        self.clone_from(&Self::from(
+            persistance::load().expect("Failed to reload state."),
+        ));
+    }
+
+    pub fn get_selected_book(&self) -> Option<&Book> {
+        self.books.get(self.book_table.selected()?)
+    }
+
+    fn enter_add_mode(&mut self) {
         self.focus = Focus::Info;
         self.book_info.mode = book_info::Mode::Add;
         self.book_info.form = book_info::Form::default();
     }
 
-    pub fn enter_edit_mode(&mut self) {
+    fn enter_edit_mode(&mut self) {
         if let Some(book) = self.get_selected_book() {
             self.book_info.form = book_info::Form::from(book);
             self.focus = Focus::Info;
@@ -118,51 +111,63 @@ impl Model {
         }
     }
 
-    pub fn enter_view_mode(&mut self) {
+    fn enter_view_mode(&mut self) {
         self.focus = Focus::Table;
         self.status.mode = status::Mode::Ok;
         self.book_info.mode = book_info::Mode::View;
     }
 
-    pub fn enter_confirm_mode(&mut self) {
+    fn enter_confirm_mode(&mut self) {
         self.focus = Focus::Status;
         self.status.mode = status::Mode::ConfirmDeleteBook;
     }
 
-    pub fn get_selected_book(&self) -> Option<&Book> {
-        self.books.get(self.book_table.selected()?)
-    }
-
-    pub fn select_book_by_id(&mut self, id: Uuid) {
-        match self.get_table_position_by_id(id) {
-            Some(position) => self.book_table.select(Some(position)),
-            None => {}
-        }
-    }
-
-    pub fn add_book(&mut self, book: Book) -> Uuid {
+    fn add_book(&mut self, book: Book) {
         info!("Book added: {:?}", book);
         let id = book.id.clone();
         self.books.push(book);
         self.sort_books_by_title();
-        id
+        self.select_book_by_id(id);
+        self.update_scrollbar_length();
     }
 
-    pub fn update_book(&mut self, updated_book: &mut Book) -> Uuid {
+    fn update_book(&mut self, updated_book: &mut Book) {
         if let Some(book_index) = self.book_table.selected() {
             updated_book.id = self.books[book_index].id;
             info!("Book updated: {:?}", updated_book);
             let book_id = updated_book.id.clone();
             self.books[book_index] = updated_book.to_owned();
             self.sort_books_by_title();
-            book_id
+            self.select_book_by_id(book_id);
+            self.update_scrollbar_length();
         } else {
             panic!("The book to be updated was not found")
         }
     }
 
+    fn delete_book(&mut self, book_index: usize) {
+        self.books.remove(book_index);
+        if self.books.is_empty() {
+            self.book_table.select(None)
+        } else if book_index == self.books.len() {
+            self.book_table.select_previous();
+        }
+        self.update_scrollbar_length();
+    }
+
+    fn update_scrollbar_length(&mut self) {
+        self.book_table.update_scrollbar_length(self.books.len());
+    }
+
     fn get_table_position_by_id(&self, book_id: Uuid) -> Option<usize> {
         self.books.iter().position(|b| b.id == book_id)
+    }
+
+    fn select_book_by_id(&mut self, id: Uuid) {
+        match self.get_table_position_by_id(id) {
+            Some(position) => self.book_table.select(Some(position)),
+            None => {}
+        }
     }
 
     fn sort_books_by_title(&mut self) {

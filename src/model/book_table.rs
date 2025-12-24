@@ -36,6 +36,10 @@ impl State {
         self.sync_scrollbar_position();
     }
 
+    pub fn update_scrollbar_length(&mut self, length: usize) {
+        self.scrollbar_state = self.scrollbar_state.content_length(length);
+    }
+
     fn sync_scrollbar_position(&mut self) {
         self.scrollbar_state = self
             .scrollbar_state
