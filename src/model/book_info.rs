@@ -1,3 +1,5 @@
+use ratatui_image::picker::Picker;
+use ratatui_image::protocol::StatefulProtocol;
 use crate::model::book::{Book, ReadingStatus};
 use uuid::Uuid;
 
@@ -5,30 +7,32 @@ pub const MIN_RATING: u8 = 0; // haven't read yet
 pub const MAX_RATING: u8 = 5;
 pub const DEFAULT_RATING: u8 = 0;
 
-#[derive(Clone, Default)]
 pub struct State {
     pub mode: Mode,
     pub form: Form,
+    pub image_picker: Picker,
+    pub cover_image: Option<StatefulProtocol>,
 }
 
 impl State {
-    pub fn new() -> Self {
+    pub fn new(image_picker: Picker) -> Self {
         Self {
             mode: Mode::View,
             form: Form::default(),
+            image_picker,
+            cover_image: None,
         }
     }
 }
 
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum Mode {
-    #[default]
     View,
     Add,
     Edit,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Debug)]
 pub struct Form {
     pub id: Option<Uuid>,
     pub title: String,

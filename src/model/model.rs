@@ -1,5 +1,6 @@
 use crate::{
     event::Message,
+    image_util,
     model::{
         book::Book,
         book_info, book_table,
@@ -9,9 +10,9 @@ use crate::{
 };
 use log::info;
 use std::collections::HashSet;
+use std::io;
 use uuid::Uuid;
 
-#[derive(Clone, Default)]
 pub struct Model {
     pub books: Vec<Book>,
     pub book_table: book_table::State,
@@ -27,7 +28,7 @@ impl Model {
         Self {
             books: saved_state.books,
             book_table: book_table::State::new(book_count, saved_state.selected),
-            book_info: book_info::State::new(),
+            book_info: book_info::State::new(image_util::create_picker()),
             status: status::State::new(),
             focus: Focus::Table,
             running_state: RunningState::Running,
@@ -46,11 +47,11 @@ impl Model {
                 self.reload();
             }
             Message::NextBook => {
-                self.select_table_next();
+                self.select_next_book();
                 self.persist();
             }
             Message::PreviousBook => {
-                self.select_table_previous();
+                self.select_previous_book();
                 self.persist();
             }
             Message::ConfirmDeleteBook => self.enter_confirm_mode(),
@@ -99,7 +100,12 @@ impl Model {
     }
 
     pub fn load() -> Self {
-        Self::from(persistance::load().expect("Failed to load state."))
+        let mut model = Self::from(persistance::load().expect("Failed to load state."));
+        model.book_info.image_picker = image_util::create_picker();
+        if let Some(new_book_index) = model.book_table.table_state.selected() {
+            model.load_book_cover(new_book_index);
+        }
+        model
     }
 
     pub fn persist(&self) {
@@ -107,9 +113,10 @@ impl Model {
     }
 
     pub fn reload(&mut self) {
-        self.clone_from(&Self::from(
-            persistance::load().expect("Failed to reload state."),
-        ));
+        let new = Self::load();
+        self.books = new.books;
+        self.book_table = new.book_table;
+        self.book_info = new.book_info;
     }
 
     pub fn get_selected_book(&self) -> Option<&Book> {
@@ -162,27 +169,57 @@ impl Model {
         self.status.mode = status::Mode::ConfirmDeleteBook;
     }
 
-    fn select_table_next(&mut self) {
-        if self.book_table.table_state.selected().is_some()
-            && self.book_table.table_state.selected().unwrap() < self.books.len() - 1
-        {
-            self.book_table.table_state.select_next();
-            self.book_table.sync_scrollbar_position();
+    fn select_next_book(&mut self) {
+        if let Some(current_book_index) = self.book_table.table_state.selected() {
+            if current_book_index < self.books.len() - 1 {
+                self.book_table.table_state.select_next();
+                self.book_table.sync_scrollbar_position();
+                if let Some(new_book_index) = self.book_table.table_state.selected() {
+                    self.load_book_cover(new_book_index);
+                }
+            }
         }
     }
 
-    fn select_table_previous(&mut self) {
-        if self.book_table.table_state.selected().is_some()
-            && self.book_table.table_state.selected().unwrap() > 0
-        {
-            self.book_table.table_state.select_previous();
-            self.book_table.sync_scrollbar_position();
+    fn select_previous_book(&mut self) {
+        if let Some(book_index) = self.book_table.table_state.selected() {
+            if book_index > 0 {
+                self.book_table.table_state.select_previous();
+                self.book_table.sync_scrollbar_position();
+                if let Some(new_book_index) = self.book_table.table_state.selected() {
+                    self.load_book_cover(new_book_index);
+                }
+            }
         }
     }
 
-    fn select_table(&mut self, index: Option<usize>) {
+    fn select_book_by_index(&mut self, index: Option<usize>) {
         self.book_table.table_state.select(index);
         self.book_table.sync_scrollbar_position();
+        if let Some(new_book_index) = self.book_table.table_state.selected() {
+            self.load_book_cover(new_book_index);
+        }
+    }
+
+    fn load_book_cover(&mut self, book_index: usize) {
+        let book = &self.books[book_index];
+        let Some(path) = &book.cover_path else {
+            self.book_info.cover_image = None;
+            return;
+        };
+        let dyn_img = image::ImageReader::open(path).and_then(|r| {
+            r.decode()
+                .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+        });
+        match dyn_img {
+            Ok(img) => {
+                self.book_info.cover_image =
+                    Some(self.book_info.image_picker.new_resize_protocol(img));
+            }
+            Err(_) => {
+                self.book_info.cover_image = None;
+            }
+        }
     }
 
     fn add_book(&mut self, book: Book) {
@@ -211,9 +248,9 @@ impl Model {
     fn delete_book(&mut self, book_index: usize) {
         self.books.remove(book_index);
         if self.books.is_empty() {
-            self.select_table(None)
+            self.select_book_by_index(None)
         } else if book_index == self.books.len() {
-            self.select_table_previous();
+            self.select_previous_book();
         }
         self.update_scrollbar_length();
     }
@@ -228,7 +265,7 @@ impl Model {
 
     fn select_book_by_id(&mut self, id: Uuid) {
         match self.get_table_position_by_id(id) {
-            Some(position) => self.select_table(Some(position)),
+            Some(position) => self.select_book_by_index(Some(position)),
             None => {}
         }
     }
@@ -239,7 +276,7 @@ impl Model {
     }
 }
 
-#[derive(Clone, Default, Eq, PartialEq)]
+#[derive(Default, Eq, PartialEq)]
 pub enum Focus {
     #[default]
     Table,
@@ -247,7 +284,7 @@ pub enum Focus {
     Status,
 }
 
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[derive(Debug, Default, Eq, PartialEq)]
 pub enum RunningState {
     #[default]
     Running,

@@ -1,6 +1,7 @@
 use crate::model::book_info;
 use log::error;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use uuid::Uuid;
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -13,6 +14,7 @@ pub struct Book {
     pub reading_status: ReadingStatus,
     pub rating: u8,
     pub note: String,
+    pub cover_path: Option<PathBuf>,
 }
 
 impl Book {
@@ -57,6 +59,7 @@ impl Book {
             reading_status: form.reading_status.clone(),
             rating,
             note,
+            cover_path: None,
         })
     }
 

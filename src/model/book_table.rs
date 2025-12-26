@@ -1,6 +1,6 @@
 use ratatui::widgets::{ScrollbarState, TableState};
 
-#[derive(Clone, Default)]
+#[derive(Default)]
 pub struct State {
     pub table_state: TableState,
     pub scrollbar_state: ScrollbarState,

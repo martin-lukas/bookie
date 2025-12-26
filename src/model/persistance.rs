@@ -6,7 +6,7 @@ use std::{
     io::Write,
 };
 
-const SAVED_STATE_PATH: &str = "state.json";
+const SAVED_STATE_PATH: &str = "bookie-state.json";
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct SavedState {

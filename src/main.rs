@@ -1,4 +1,5 @@
 mod event;
+mod image_util;
 mod logging;
 mod model;
 mod view;

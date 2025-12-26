@@ -2,6 +2,7 @@ mod content;
 mod footer;
 mod header;
 
+use log::error;
 use crate::{
     model::model::Model,
     view::{content::render_content, footer::render_footer, header::render_header},
@@ -30,6 +31,13 @@ pub fn view(model: &mut Model, frame: &mut Frame) {
     render_header(model, frame, chunks[0]);
     render_content(model, frame, chunks[1]);
     render_footer(model, frame, chunks[2]);
+
+    // Clean up for specific terminals (Kitty etc.)
+    if let Some(img) = &mut model.book_info.cover_image {
+        if let Some(Err(err)) = img.last_encoding_result() {
+            error!("Failed to call last_encoding_result: {err}");
+        }
+    }
 }
 
 pub fn with_panel<F>(frame: &mut Frame, area: Rect, title: &str, render: F)

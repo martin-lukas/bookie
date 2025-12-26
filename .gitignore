@@ -1,4 +1,5 @@
 .idea/
 target/
 *.log
-state.json*
+bookie-state.json*
+covers/

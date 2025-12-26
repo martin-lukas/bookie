@@ -1,4 +1,4 @@
-#[derive(Clone, Default)]
+#[derive(Default)]
 pub struct State {
     pub mode: Mode,
 }
@@ -9,7 +9,7 @@ impl State {
     }
 }
 
-#[derive(Clone, Default)]
+#[derive(Default)]
 pub enum Mode {
     #[default]
     Ok,
