@@ -1,6 +1,10 @@
-use ratatui_image::picker::Picker;
-use ratatui_image::protocol::StatefulProtocol;
 use crate::model::book::{Book, ReadingStatus};
+use ratatui_image::{
+    errors::Errors,
+    picker::Picker,
+    thread::{ResizeResponse, ThreadProtocol},
+};
+use std::sync::mpsc::Receiver;
 use uuid::Uuid;
 
 pub const MIN_RATING: u8 = 0; // haven't read yet
@@ -11,7 +15,8 @@ pub struct State {
     pub mode: Mode,
     pub form: Form,
     pub image_picker: Picker,
-    pub cover_image: Option<StatefulProtocol>,
+    pub cover_receiver: Option<Receiver<Result<ResizeResponse, Errors>>>,
+    pub cover: Cover,
 }
 
 impl State {
@@ -20,7 +25,8 @@ impl State {
             mode: Mode::View,
             form: Form::default(),
             image_picker,
-            cover_image: None,
+            cover_receiver: None,
+            cover: Cover::None,
         }
     }
 }
@@ -137,4 +143,10 @@ impl Form {
     pub fn clear_error(&mut self) {
         self.error = None;
     }
+}
+
+pub enum Cover {
+    None,
+    Loading,
+    Ready(ThreadProtocol),
 }

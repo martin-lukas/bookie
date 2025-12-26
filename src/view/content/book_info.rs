@@ -1,12 +1,15 @@
-use crate::model::book::ReadingStatus;
 use crate::{
-    model::model::Model,
-    view::{with_panel, STAR},
+    model::{
+        book::ReadingStatus,
+        book_info,
+        model::Model
+    },
+    view::{with_panel, STAR}
 };
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     prelude::{Color, Line, Modifier, Span, Style, Text},
-    widgets::Paragraph,
+    widgets::{Block, Borders, Paragraph},
     Frame,
 };
 use ratatui_image::StatefulImage;
@@ -77,7 +80,7 @@ fn render_book_info_content(
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([
-            Constraint::Length(20),
+            Constraint::Length(16),
             Constraint::Length(max_label_width(labels)),
             Constraint::Fill(1),
         ])
@@ -109,23 +112,54 @@ fn render_book_info_empty(frame: &mut Frame, inner: Rect) {
 }
 
 fn render_book_cover(model: &mut Model, frame: &mut Frame, area: Rect) {
-    if let Some(image_state) = model.book_info.cover_image.as_mut() {
-        let padded_area = if area.width > 1 {
-            Rect {
-                x: area.x,
-                y: area.y,
-                width: area.width - 1,
-                height: area.height,
-            }
-        } else {
-            area
-        };
-
-        let image = StatefulImage::default().resize(ratatui_image::Resize::Fit(None));
-        frame.render_stateful_widget(image, padded_area, image_state);
+    let padded_area = if area.width > 1 {
+        Rect {
+            x: area.x,
+            y: area.y,
+            width: area.width - 1,
+            height: area.height,
+        }
     } else {
-        // optional placeholder
+        area
+    };
+    match &mut model.book_info.cover {
+        book_info::Cover::Ready(image_state) => {
+            let image = StatefulImage::default().resize(ratatui_image::Resize::Scale(None));
+            render_cover_placeholder(frame, padded_area, "\n\n\nLOADING");
+            frame.render_stateful_widget(image, padded_area, image_state);
+        }
+        book_info::Cover::Loading => {
+            render_cover_placeholder(frame, padded_area, "\n\n\nLOADING");
+        }
+        book_info::Cover::None => {
+            render_cover_placeholder(frame, padded_area, "\n\n\nCOVER");
+        }
     }
+}
+
+fn render_cover_placeholder(frame: &mut Frame, area: Rect, text: &str) {
+    let height = std::cmp::min(area.height, 10);
+
+    let limited_area = Rect {
+        x: area.x,
+        y: area.y,
+        width: area.width,
+        height,
+    };
+
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(Color::DarkGray));
+
+    frame.render_widget(&block, limited_area);
+
+    let inner = block.inner(limited_area);
+
+    let paragraph = Paragraph::new(text)
+        .alignment(Alignment::Center)
+        .style(Style::default().fg(Color::DarkGray));
+
+    frame.render_widget(paragraph, inner);
 }
 
 fn max_label_width(labels: &[&str]) -> u16 {

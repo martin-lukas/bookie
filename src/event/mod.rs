@@ -9,8 +9,6 @@ use std::time::Duration;
 #[derive(PartialEq)]
 pub enum Message {
     Quit,
-    RefreshState,
-    // Table messages
     NextBook,
     PreviousBook,
     AddBook,

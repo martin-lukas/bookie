@@ -59,7 +59,7 @@ impl Book {
             reading_status: form.reading_status.clone(),
             rating,
             note,
-            cover_path: None,
+            cover_path: Some(format!("./covers/{}.jpg", form.title).into()), // TODO: allow to override?
         })
     }
 

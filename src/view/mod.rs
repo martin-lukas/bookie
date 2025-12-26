@@ -2,9 +2,8 @@ mod content;
 mod footer;
 mod header;
 
-use log::error;
 use crate::{
-    model::model::Model,
+    model::{book_info, model::Model},
     view::{content::render_content, footer::render_footer, header::render_header},
 };
 use ratatui::{
@@ -33,9 +32,11 @@ pub fn view(model: &mut Model, frame: &mut Frame) {
     render_footer(model, frame, chunks[2]);
 
     // Clean up for specific terminals (Kitty etc.)
-    if let Some(img) = &mut model.book_info.cover_image {
-        if let Some(Err(err)) = img.last_encoding_result() {
-            error!("Failed to call last_encoding_result: {err}");
+    if let Some(receiver) = &model.book_info.cover_receiver {
+        if let Ok(Ok(res)) = receiver.try_recv() {
+            if let book_info::Cover::Ready(protocol) = &mut model.book_info.cover {
+                let _ = protocol.update_resized_protocol(res);
+            }
         }
     }
 }

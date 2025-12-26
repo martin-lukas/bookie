@@ -9,8 +9,11 @@ use crate::{
     },
 };
 use log::info;
-use std::collections::HashSet;
-use std::io;
+use ratatui_image::{
+    errors::Errors,
+    thread::{ResizeRequest, ResizeResponse, ThreadProtocol},
+};
+use std::{collections::HashSet, io, sync::mpsc};
 use uuid::Uuid;
 
 pub struct Model {
@@ -41,10 +44,6 @@ impl Model {
             Message::Quit => {
                 self.persist();
                 self.running_state = RunningState::Done;
-            }
-            Message::RefreshState => {
-                self.persist();
-                self.reload();
             }
             Message::NextBook => {
                 self.select_next_book();
@@ -103,20 +102,16 @@ impl Model {
         let mut model = Self::from(persistance::load().expect("Failed to load state."));
         model.book_info.image_picker = image_util::create_picker();
         if let Some(new_book_index) = model.book_table.table_state.selected() {
-            model.load_book_cover(new_book_index);
+            model.load_book_cover_async(new_book_index);
         }
+        model.books.iter_mut().for_each(|book| {
+            book.cover_path = Some(format!("./covers/{}.jpg", book.title).into());
+        });
         model
     }
 
     pub fn persist(&self) {
         persistance::save_state(&self).expect("Failed to save state.");
-    }
-
-    pub fn reload(&mut self) {
-        let new = Self::load();
-        self.books = new.books;
-        self.book_table = new.book_table;
-        self.book_info = new.book_info;
     }
 
     pub fn get_selected_book(&self) -> Option<&Book> {
@@ -148,6 +143,7 @@ impl Model {
         self.focus = Focus::Info;
         self.book_info.mode = book_info::Mode::Add;
         self.book_info.form = book_info::Form::default();
+        self.book_info.cover = book_info::Cover::None;
     }
 
     fn enter_edit_mode(&mut self) {
@@ -162,6 +158,9 @@ impl Model {
         self.focus = Focus::Table;
         self.status.mode = status::Mode::Ok;
         self.book_info.mode = book_info::Mode::View;
+        if let Some(book_index) = self.book_table.table_state.selected() {
+            self.load_book_cover_async(book_index);
+        }
     }
 
     fn enter_confirm_mode(&mut self) {
@@ -175,7 +174,7 @@ impl Model {
                 self.book_table.table_state.select_next();
                 self.book_table.sync_scrollbar_position();
                 if let Some(new_book_index) = self.book_table.table_state.selected() {
-                    self.load_book_cover(new_book_index);
+                    self.load_book_cover_async(new_book_index);
                 }
             }
         }
@@ -187,7 +186,7 @@ impl Model {
                 self.book_table.table_state.select_previous();
                 self.book_table.sync_scrollbar_position();
                 if let Some(new_book_index) = self.book_table.table_state.selected() {
-                    self.load_book_cover(new_book_index);
+                    self.load_book_cover_async(new_book_index);
                 }
             }
         }
@@ -197,29 +196,45 @@ impl Model {
         self.book_table.table_state.select(index);
         self.book_table.sync_scrollbar_position();
         if let Some(new_book_index) = self.book_table.table_state.selected() {
-            self.load_book_cover(new_book_index);
+            self.load_book_cover_async(new_book_index);
         }
     }
 
-    fn load_book_cover(&mut self, book_index: usize) {
-        let book = &self.books[book_index];
-        let Some(path) = &book.cover_path else {
-            self.book_info.cover_image = None;
+    fn load_book_cover_async(&mut self, book_index: usize) {
+        self.book_info.cover = book_info::Cover::Loading;
+
+        let (resize_req_send, resize_req_recv) = mpsc::channel::<ResizeRequest>();
+        let (resize_res_send, resize_res_recv) = mpsc::channel::<Result<ResizeResponse, Errors>>();
+
+        std::thread::spawn(move || {
+            while let Ok(req) = resize_req_recv.recv() {
+                let res = req.resize_encode();
+                resize_res_send.send(res).ok();
+            }
+        });
+
+        let Some(path) = &self.books[book_index].cover_path else {
+            self.book_info.cover = book_info::Cover::None;
+            self.book_info.cover_receiver = None;
             return;
         };
-        let dyn_img = image::ImageReader::open(path).and_then(|r| {
+        let img = match image::ImageReader::open(path).and_then(|r| {
             r.decode()
                 .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
-        });
-        match dyn_img {
-            Ok(img) => {
-                self.book_info.cover_image =
-                    Some(self.book_info.image_picker.new_resize_protocol(img));
-            }
+        }) {
+            Ok(img) => img,
             Err(_) => {
-                self.book_info.cover_image = None;
+                self.book_info.cover = book_info::Cover::None;
+                self.book_info.cover_receiver = None;
+                return;
             }
-        }
+        };
+        let protocol = self.book_info.image_picker.new_resize_protocol(img);
+
+        self.book_info.cover =
+            book_info::Cover::Ready(ThreadProtocol::new(resize_req_send, Some(protocol)));
+
+        self.book_info.cover_receiver = Some(resize_res_recv);
     }
 
     fn add_book(&mut self, book: Book) {
