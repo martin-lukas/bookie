@@ -1,6 +1,6 @@
 use crate::{
     model::{book::Book, focus::Focus, Model},
-    view::STAR,
+    view::{BLUE, STAR},
 };
 use ratatui::{
     layout::{Constraint, Rect},
@@ -101,19 +101,11 @@ fn create_book_table(
             Cell::from("Authors"),
             Cell::from("Rating"),
         ])
-        .style(
-            Style::default()
-                .add_modifier(Modifier::BOLD)
-                .fg(Color::Rgb(15, 154, 189)),
-        ),
+        .style(Style::default().add_modifier(Modifier::BOLD).fg(BLUE)),
     )
     .row_highlight_style(
         Style::default()
-            .bg(if is_table_focused {
-                Color::Rgb(15, 154, 189)
-            } else {
-                Color::DarkGray
-            })
+            .bg(if is_table_focused { BLUE } else { Color::Gray })
             .add_modifier(Modifier::BOLD),
     )
 }

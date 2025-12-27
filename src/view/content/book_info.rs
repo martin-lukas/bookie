@@ -1,21 +1,20 @@
 use crate::{
     model::{
         book::ReadingStatus,
-        book_info::{
-            form::{FormField, TextInput},
-            CoverStatus,
-        },
+        book_info::{form_field::FormField, text_input::TextInput, CoverStatus},
         Model,
     },
     view::{with_panel, STAR},
 };
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
-    prelude::{Color, Line, Modifier, Span, Style, Text},
-    widgets::{Block, Borders, Paragraph, Wrap},
+    style::{Color, Modifier, Style},
+    text::{Line, Span, Text},
+    widgets::{Block, Borders, Paragraph},
     Frame,
 };
 use ratatui_image::StatefulImage;
+use unicode_segmentation::UnicodeSegmentation;
 use unicode_width::UnicodeWidthStr;
 
 const LABELS: &[&str] = &[
@@ -36,11 +35,11 @@ pub fn render_book_info(model: &mut Model, frame: &mut Frame, area: Rect) {
         };
 
         let values = vec![
-            static_line(&book.title.clone()),
+            static_line(&book.title),
             static_line(book.authors.join(", ")),
             static_line(book.year.to_string()),
             static_line(book.pages.to_string()),
-            reading_status_line(&book.reading_status, false),
+            reading_status_line(&book.reading_status, true),
             Line::styled(
                 STAR.repeat(book.rating as usize),
                 Style::default().fg(Color::LightYellow),
@@ -49,14 +48,7 @@ pub fn render_book_info(model: &mut Model, frame: &mut Frame, area: Rect) {
 
         let note = book.note.clone();
 
-        render_book_info_content(
-            LABELS,
-            values,
-            Paragraph::new(note).wrap(Wrap { trim: false }),
-            model,
-            frame,
-            area,
-        );
+        render_book_info_content(LABELS, values, Paragraph::new(note), model, frame, area);
     });
 }
 
@@ -114,7 +106,7 @@ fn render_book_info_content(
         .constraints([Constraint::Length(values.len() as u16), Constraint::Fill(1)])
         .split(chunks[2]);
 
-    frame.render_widget(Paragraph::new(Text::from(values)), value_chunks[0]);
+    frame.render_widget(Paragraph::new(values), value_chunks[0]);
     frame.render_widget(note, value_chunks[1]);
 }
 
@@ -228,44 +220,95 @@ fn reading_status_line(status: &ReadingStatus, active: bool) -> Line<'static> {
 /* ---------- shared text rendering ---------- */
 
 fn render_text_line(input: &TextInput, active: bool) -> Line<'static> {
-    let text = text_with_cursor(&input.text, input.cursor, active);
-    Line::from(text.lines.into_iter().next().unwrap_or_default())
+    text_with_cursor(&input.text, input.cursor, active)
 }
 
 fn render_text_paragraph(input: &TextInput, active: bool) -> Paragraph<'static> {
-    Paragraph::new(text_with_cursor(&input.text, input.cursor, active)).wrap(Wrap { trim: false })
+    Paragraph::new(text_paragraph_with_cursor(
+        &input.text,
+        input.cursor,
+        active,
+    ))
 }
 
-fn text_with_cursor(text: &str, cursor: usize, active: bool) -> Text<'static> {
-    let chars: Vec<char> = text.chars().collect();
-    let cursor = cursor.min(chars.len());
+fn text_with_cursor(text: &str, cursor: usize, active: bool) -> Line<'static> {
+    let graphemes: Vec<&str> = UnicodeSegmentation::graphemes(text, true).collect();
 
-    let before: String = chars[..cursor].iter().collect();
-    let after: String = chars[cursor..].iter().collect();
+    let base_style = if active {
+        Style::default().fg(Color::LightYellow)
+    } else {
+        Style::default()
+    };
 
-    let mut spans = Vec::new();
+    let cursor_style = Style::default().bg(Color::LightYellow).fg(Color::Black);
 
-    if !before.is_empty() {
-        spans.push(if active {
-            Span::styled(before, Style::default().fg(Color::LightYellow))
+    let mut spans = Vec::with_capacity(graphemes.len() + 1);
+
+    // Highlight the character under the cursor
+    for (i, c) in graphemes.iter().enumerate() {
+        if active && i == cursor {
+            spans.push(Span::styled((*c).to_string(), cursor_style).to_owned());
         } else {
-            Span::raw(before)
-        });
+            spans.push(Span::styled((*c).to_string(), base_style).to_owned());
+        }
     }
 
-    if active {
-        spans.push(Span::styled("█", Style::default().fg(Color::LightYellow)));
+    // Cursor at end of text: render a block cursor
+    if active && cursor == graphemes.len() {
+        spans.push(Span::styled(" ".to_string(), cursor_style).to_owned());
     }
 
-    if !after.is_empty() {
-        spans.push(if active {
-            Span::styled(after, Style::default().fg(Color::LightYellow))
+    Line::from(spans)
+}
+
+fn text_paragraph_with_cursor(text: &str, cursor: usize, active: bool) -> Text<'static> {
+    let base = if active {
+        Style::default().fg(Color::LightYellow)
+    } else {
+        Style::default()
+    };
+
+    let cursor_style = Style::default().bg(Color::LightYellow).fg(Color::Black);
+
+    let graphemes: Vec<&str> = UnicodeSegmentation::graphemes(text, true).collect();
+
+    let mut lines: Vec<Vec<Span>> = vec![Vec::new()];
+    let mut idx = 0;
+
+    for g in graphemes {
+        if g == "\n" {
+            // Cursor at end of this line
+            if active && idx == cursor {
+                lines
+                    .last_mut()
+                    .unwrap()
+                    .push(Span::styled(" ".to_string(), cursor_style));
+            }
+
+            lines.push(Vec::new());
+            idx += 1;
+            continue;
+        }
+
+        let span = if active && idx == cursor {
+            Span::styled(g.to_string(), cursor_style)
         } else {
-            Span::raw(after)
-        });
+            Span::styled(g.to_string(), base)
+        };
+
+        lines.last_mut().unwrap().push(span);
+        idx += 1;
     }
 
-    Text::from(Line::from(spans))
+    // Cursor at very end
+    if active && idx == cursor {
+        lines
+            .last_mut()
+            .unwrap()
+            .push(Span::styled(" ".to_string(), cursor_style));
+    }
+
+    Text::from(lines.into_iter().map(Line::from).collect::<Vec<_>>())
 }
 
 fn static_line(text: impl Into<String>) -> Line<'static> {

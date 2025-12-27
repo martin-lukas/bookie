@@ -12,6 +12,8 @@ use ratatui::{
     Frame,
 };
 
+pub const BLUE: Color = Color::Rgb(0, 170, 223);
+
 #[cfg(not(windows))]
 pub const STAR: &str = "⭑"; // ⭐/ ✰ / ★ / ⭑
 #[cfg(windows)]

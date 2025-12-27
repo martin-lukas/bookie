@@ -1,6 +1,8 @@
 use crate::model::{
     book::{Book, ReadingStatus},
-    book_info::{DEFAULT_RATING, MAX_RATING, MIN_RATING},
+    book_info::{
+        form_field::FormField, text_input::TextInput, DEFAULT_RATING, MAX_RATING, MIN_RATING,
+    },
 };
 use uuid::Uuid;
 
@@ -51,85 +53,44 @@ impl BookForm {
 
     pub fn insert_char(&mut self, c: char) {
         match self.active {
-            FormField::Title => self.title.text.push(c),
-            FormField::Authors => self.authors.text.push(c),
-            FormField::Year => self.year.text.push(c),
-            FormField::Pages => self.pages.text.push(c),
-            FormField::Note => self.note.text.push(c),
+            FormField::Title => self.title.insert_char(c),
+            FormField::Authors => self.authors.insert_char(c),
+            FormField::Year => self.year.insert_char(c),
+            FormField::Pages => self.pages.insert_char(c),
+            FormField::Note => self.note.insert_char(c),
             _ => {}
         }
     }
 
     pub fn delete_char(&mut self) {
         match self.active {
-            FormField::Title => self.title.text.pop(),
-            FormField::Authors => self.authors.text.pop(),
-            FormField::Year => self.year.text.pop(),
-            FormField::Pages => self.pages.text.pop(),
-            FormField::Note => self.note.text.pop(),
-            _ => None,
+            FormField::Title => self.title.delete_char(),
+            FormField::Authors => self.authors.delete_char(),
+            FormField::Year => self.year.delete_char(),
+            FormField::Pages => self.pages.delete_char(),
+            FormField::Note => self.note.delete_char(),
+            _ => {}
         };
-        ()
     }
 
     pub fn move_cursor_left(&mut self) {
         match self.active {
-            FormField::Title => {
-                if self.title.cursor > 0 {
-                    self.title.cursor -= 1;
-                }
-            }
-            FormField::Authors => {
-                if self.authors.cursor > 0 {
-                    self.authors.cursor -= 1;
-                }
-            }
-            FormField::Year => {
-                if self.year.cursor > 0 {
-                    self.year.cursor -= 1;
-                }
-            }
-            FormField::Pages => {
-                if self.pages.cursor > 0 {
-                    self.pages.cursor -= 1;
-                }
-            }
-            FormField::Note => {
-                if self.note.cursor > 0 {
-                    self.note.cursor -= 1;
-                }
-            }
+            FormField::Title => self.title.move_cursor_left(),
+            FormField::Authors => self.authors.move_cursor_left(),
+            FormField::Year => self.year.move_cursor_left(),
+            FormField::Pages => self.pages.move_cursor_left(),
+            FormField::Note => self.note.move_cursor_left(),
             _ => {}
         }
     }
 
     pub fn move_cursor_right(&mut self) {
         match self.active {
-            FormField::Title => {
-                if self.title.cursor < self.title.text.len() {
-                    self.title.cursor += 1;
-                }
-            }
-            FormField::Authors => {
-                if self.authors.cursor < self.authors.text.len() {
-                    self.authors.cursor += 1;
-                }
-            }
-            FormField::Year => {
-                if self.year.cursor < self.year.text.len() {
-                    self.year.cursor += 1;
-                }
-            }
-            FormField::Pages => {
-                if self.pages.cursor < self.pages.text.len() {
-                    self.pages.cursor += 1;
-                }
-            }
-            FormField::Note => {
-                if self.note.cursor < self.note.text.len() {
-                    self.note.cursor += 1;
-                }
-            }
+            FormField::Title => self.title.move_cursor_right(),
+            FormField::Authors => self.authors.move_cursor_right(),
+            FormField::Year => self.year.move_cursor_right(),
+            FormField::Pages => self.pages.move_cursor_right(),
+            FormField::Note => self.note.move_cursor_right(),
             _ => {}
         }
     }
@@ -168,61 +129,5 @@ impl BookForm {
 
     pub fn clear_error(&mut self) {
         self.error = None;
-    }
-}
-
-#[derive(Debug, Default)]
-pub struct TextInput {
-    pub text: String,
-    pub cursor: usize,
-    pub multiline: bool,
-}
-
-impl TextInput {
-    pub fn new(text: String) -> Self {
-        Self {
-            text,
-            cursor: 0,
-            multiline: false,
-        }
-    }
-
-    pub fn multiline(mut self, multiline: bool) -> Self {
-        self.multiline = multiline;
-        self
-    }
-}
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum FormField {
-    Title,
-    Authors,
-    Year,
-    Pages,
-    ReadingStatus,
-    Rating,
-    Note,
-}
-
-impl FormField {
-    pub const ORDER: [FormField; 7] = [
-        FormField::Title,
-        FormField::Authors,
-        FormField::Year,
-        FormField::Pages,
-        FormField::ReadingStatus,
-        FormField::Rating,
-        FormField::Note,
-    ];
-
-    pub fn next(&self) -> Self {
-        let pos = Self::ORDER.iter().position(|f| f == self).unwrap();
-        Self::ORDER[(pos + 1) % Self::ORDER.len()]
-    }
-
-    pub fn prev(&self) -> Self {
-        let pos = Self::ORDER.iter().position(|f| f == self).unwrap();
-        let len = Self::ORDER.len();
-        Self::ORDER[(pos + len - 1) % len]
     }
 }

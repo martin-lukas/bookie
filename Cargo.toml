@@ -16,6 +16,7 @@ serde = { version = "1.0.228", features = ["derive"] }
 unicode-width = "0.2"
 uuid = { version = "1.19.0", features = ["v4", "serde"] }
 color-eyre = "0.6.5"
+unicode-segmentation = "1.12.0"
 
 [dev-dependencies]
 rstest = "0.26.1"

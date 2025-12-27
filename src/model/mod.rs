@@ -2,9 +2,9 @@ pub mod book;
 pub mod book_info;
 pub mod book_table;
 pub mod focus;
+mod persistance;
 pub mod running_state;
 pub mod status;
-mod persistance;
 
 use crate::{
     event::Message,
@@ -12,8 +12,7 @@ use crate::{
     model::{
         book::Book,
         book_info::{
-            form::{BookForm, FormField},
-            BookInfoMode, BookInfoState, CoverStatus,
+            form::BookForm, form_field::FormField, BookInfoMode, BookInfoState, CoverStatus,
         },
         book_table::BookTableState,
         focus::Focus,
@@ -249,7 +248,8 @@ impl Model {
         };
         let protocol = self.book_info.image_picker.new_resize_protocol(img);
 
-        self.book_info.cover = CoverStatus::Ready(ThreadProtocol::new(tx_resize_req, Some(protocol)));
+        self.book_info.cover =
+            CoverStatus::Ready(ThreadProtocol::new(tx_resize_req, Some(protocol)));
 
         self.book_info.cover_rx = Some(rx_resize_res);
     }
