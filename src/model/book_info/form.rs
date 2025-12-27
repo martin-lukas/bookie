@@ -126,8 +126,4 @@ impl BookForm {
     pub fn previous_field(&mut self) {
         self.active = self.active.prev();
     }
-
-    pub fn clear_error(&mut self) {
-        self.error = None;
-    }
 }

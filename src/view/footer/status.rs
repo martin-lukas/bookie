@@ -1,4 +1,4 @@
-use crate::model::{status::Mode, Model};
+use crate::model::{status::StatusMode, Model};
 use ratatui::{
     prelude::Rect,
     style::{Color, Style},
@@ -9,14 +9,14 @@ use ratatui::{
 
 pub fn render_status(model: &Model, frame: &mut Frame, area: Rect) {
     let line = match &model.status.mode {
-        Mode::Ok => Line::styled(
+        StatusMode::Ok => Line::styled(
             "Status: OK".to_string(),
             Style::default().fg(Color::DarkGray),
         ),
-        Mode::Error(error) => {
+        StatusMode::Error(error) => {
             Line::styled(format!("Error: {}", error), Style::default().fg(Color::Red))
         }
-        Mode::ConfirmDeleteBook => match model.get_selected_book() {
+        StatusMode::ConfirmDeleteBook => match model.get_selected_book() {
             Some(book) => Line::styled(
                 format!(
                     "Do you really want to delete the book '{}'? [y/n]",

@@ -1,16 +1,16 @@
 #[derive(Default)]
 pub struct State {
-    pub mode: Mode,
+    pub mode: StatusMode,
 }
 
 impl State {
     pub fn new() -> Self {
-        Self { mode: Mode::Ok }
+        Self { mode: StatusMode::Ok }
     }
 }
 
 #[derive(Default)]
-pub enum Mode {
+pub enum StatusMode {
     #[default]
     Ok,
     Error(String),

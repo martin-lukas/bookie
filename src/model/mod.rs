@@ -18,6 +18,7 @@ use crate::{
         focus::Focus,
         persistance::SavedState,
         running_state::RunningState,
+        status::StatusMode,
     },
 };
 use log::info;
@@ -48,7 +49,7 @@ impl Model {
     }
 
     pub fn update(&mut self, msg: Message) -> Option<Message> {
-        self.book_info.form.clear_error();
+        self.clear_error();
         match msg {
             Message::Quit => {
                 self.persist();
@@ -104,7 +105,7 @@ impl Model {
                 }
                 Err(error) => {
                     self.book_info.form.error = Some(error.to_string());
-                    self.status.mode = status::Mode::Error(error);
+                    self.status.mode = StatusMode::Error(error);
                 }
             },
         }
@@ -169,7 +170,7 @@ impl Model {
 
     fn enter_view_mode(&mut self) {
         self.focus = Focus::Table;
-        self.status.mode = status::Mode::Ok;
+        self.status.mode = StatusMode::Ok;
         self.book_info.mode = BookInfoMode::View;
         if let Some(book_index) = self.book_table.table_state.selected() {
             self.load_book_cover_async(book_index);
@@ -178,7 +179,7 @@ impl Model {
 
     fn enter_confirm_mode(&mut self) {
         self.focus = Focus::Status;
-        self.status.mode = status::Mode::ConfirmDeleteBook;
+        self.status.mode = StatusMode::ConfirmDeleteBook;
     }
 
     fn select_next_book(&mut self) {
@@ -305,5 +306,10 @@ impl Model {
     fn sort_books_by_title(&mut self) {
         self.books
             .sort_by(|a, b| a.title_normalized().cmp(&b.title_normalized()));
+    }
+
+    fn clear_error(&mut self) {
+        self.book_info.form.error = None;
+        self.status.mode = StatusMode::Ok;
     }
 }
