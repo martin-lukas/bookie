@@ -7,7 +7,7 @@ mod view;
 use crate::{
     event::handle_event,
     logging::setup_logger,
-    model::model::{Model, RunningState},
+    model::{running_state::RunningState, Model},
     view::view,
 };
 use ratatui::DefaultTerminal;

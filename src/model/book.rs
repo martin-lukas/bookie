@@ -1,4 +1,4 @@
-use crate::model::book_info;
+use crate::model::book_info::form::BookForm;
 use log::error;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -18,18 +18,20 @@ pub struct Book {
 }
 
 impl Book {
-    pub fn from(form: &book_info::Form) -> Result<Self, String> {
-        let title = form.title.trim().to_string();
+    pub fn from(form: &BookForm) -> Result<Self, String> {
+        let title = form.title.text.trim().to_string();
         if title.is_empty() {
             return Err("Title cannot be empty".to_string());
         }
         let year = form
             .year
+            .text
             .trim()
             .parse::<u16>()
             .map_err(|_| "Year must be a valid number".to_string())?;
         let pages = form
             .pages
+            .text
             .trim()
             .parse::<u16>()
             .map_err(|_| "Pages must be a valid number".to_string())?;
@@ -41,6 +43,7 @@ impl Book {
             .map_err(|_| "Rating must be a valid number".to_string())?;
         let authors: Vec<String> = form
             .authors
+            .text
             .split(',')
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty())
@@ -48,7 +51,7 @@ impl Book {
         if authors.is_empty() {
             return Err("At least one author is required".to_string());
         }
-        let note = form.note.trim().to_string();
+        let note = form.note.text.trim().to_string();
 
         Ok(Self {
             id: form.id.unwrap_or(Uuid::new_v4()),
@@ -59,7 +62,7 @@ impl Book {
             reading_status: form.reading_status.clone(),
             rating,
             note,
-            cover_path: Some(format!("./covers/{}.jpg", form.title).into()), // TODO: allow to override?
+            cover_path: Some(format!("./covers/{}.jpg", form.title.text).into()), // TODO: allow to override?
         })
     }
 

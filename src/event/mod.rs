@@ -2,7 +2,7 @@ mod book_info;
 mod book_table;
 mod status;
 
-use crate::model::model::{Focus, Model};
+use crate::model::{focus::Focus, Model};
 use ratatui::crossterm::event::{self, Event};
 use std::time::Duration;
 
@@ -18,10 +18,11 @@ pub enum Message {
     CancelConfirm,
     // Form messages
     CancelForm,
+    NewLineChar,
     InsertChar(char),
     DeleteChar,
-    Increase,
-    Decrease,
+    FormRight,
+    FormLeft,
     NextFormField,
     PreviousFormField,
     SubmitForm,

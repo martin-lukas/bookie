@@ -1,4 +1,4 @@
-use crate::{model::model::Model, view::with_panel};
+use crate::{model::Model, view::with_panel};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     widgets::Paragraph,
@@ -12,7 +12,10 @@ pub fn render_book_stats(model: &Model, frame: &mut Frame, area: Rect) {
             .constraints([Constraint::Min(0), Constraint::Fill(1)])
             .split(area);
 
-        frame.render_widget(Paragraph::new("Books:\nBooks read:\nAuthors read:\nPages read:"), chunks[0]);
+        frame.render_widget(
+            Paragraph::new("Books:\nBooks read:\nAuthors read:\nPages read:"),
+            chunks[0],
+        );
 
         frame.render_widget(
             Paragraph::new(format!(

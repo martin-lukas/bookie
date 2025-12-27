@@ -1,12 +1,12 @@
 use ratatui::widgets::{ScrollbarState, TableState};
 
 #[derive(Default)]
-pub struct State {
+pub struct BookTableState {
     pub table_state: TableState,
     pub scrollbar_state: ScrollbarState,
 }
 
-impl State {
+impl BookTableState {
     pub fn new(size: usize, selected: Option<usize>) -> Self {
         let mut table_state = TableState::default();
         table_state.select(selected);
@@ -20,7 +20,7 @@ impl State {
     pub fn selected(&self) -> Option<usize> {
         self.table_state.selected()
     }
-    
+
     pub fn update_scrollbar_length(&mut self, length: usize) {
         self.scrollbar_state = self.scrollbar_state.content_length(length);
     }

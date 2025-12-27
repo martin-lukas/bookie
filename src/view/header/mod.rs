@@ -2,9 +2,9 @@ mod help;
 mod title;
 
 use crate::{
-    model::model::Model,
+    model::Model,
     view::header::{
-        help::{render_help_1, render_help_2},
+        help::{render_help_1, render_help_2, render_help_3, render_help_4},
         title::render_title,
     },
 };
@@ -12,7 +12,6 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     Frame,
 };
-use crate::view::header::help::{render_help_3, render_help_4};
 
 pub fn render_header(_: &Model, frame: &mut Frame, area: Rect) {
     let chunks = Layout::default()

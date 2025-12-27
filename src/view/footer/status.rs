@@ -1,4 +1,4 @@
-use crate::model::{model::Model, status::Mode};
+use crate::model::{status::Mode, Model};
 use ratatui::{
     prelude::Rect,
     style::{Color, Style},

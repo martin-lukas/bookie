@@ -1,4 +1,4 @@
-use crate::model::{book::Book, model::Model};
+use crate::model::{book::Book, Model};
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::{

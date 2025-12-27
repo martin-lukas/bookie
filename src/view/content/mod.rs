@@ -3,7 +3,7 @@ mod book_stats;
 mod book_table;
 
 use crate::{
-    model::{book_info::Mode, model::Model},
+    model::{book_info::BookInfoMode, Model},
     view::content::{
         book_info::{render_book_form, render_book_info},
         book_stats::render_book_stats,
@@ -27,8 +27,10 @@ pub fn render_content(model: &mut Model, frame: &mut Frame, area: Rect) {
 
     render_book_table(model, frame, table_details_chunks[0]);
     match model.book_info.mode {
-        Mode::View => render_book_info(model, frame, table_details_chunks[1]),
-        Mode::Add | Mode::Edit => render_book_form(model, frame, table_details_chunks[1]),
+        BookInfoMode::View => render_book_info(model, frame, table_details_chunks[1]),
+        BookInfoMode::Add | BookInfoMode::Edit => {
+            render_book_form(model, frame, table_details_chunks[1])
+        }
     }
     render_book_stats(model, frame, chunks[1]);
 }

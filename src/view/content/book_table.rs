@@ -1,6 +1,5 @@
-use crate::model::model::Focus;
 use crate::{
-    model::{book::Book, model::Model},
+    model::{book::Book, focus::Focus, Model},
     view::STAR,
 };
 use ratatui::{
@@ -18,7 +17,11 @@ pub fn render_book_table(model: &mut Model, frame: &mut Frame, area: Rect) {
             .split(area);
 
         frame.render_stateful_widget(
-            create_book_table(&model.books, model.focus == Focus::Table, model.book_table.table_state.selected()),
+            create_book_table(
+                &model.books,
+                model.focus == Focus::Table,
+                model.book_table.table_state.selected(),
+            ),
             chunks[0],
             &mut model.book_table.table_state,
         );
@@ -61,7 +64,11 @@ where
     render(frame, inner);
 }
 
-fn create_book_table(books: &Vec<Book>, is_table_focused: bool, selected_row: Option<usize>) -> Table<'_> {
+fn create_book_table(
+    books: &Vec<Book>,
+    is_table_focused: bool,
+    selected_row: Option<usize>,
+) -> Table<'_> {
     let rows = books.iter().enumerate().map(|(i, b)| {
         let is_row_active = selected_row.is_some() && selected_row.unwrap() == i;
         Row::new(vec![
