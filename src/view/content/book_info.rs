@@ -1,6 +1,6 @@
 use crate::{
     model::{
-        book::ReadingStatus,
+        book::reading_status::ReadingStatus,
         book_info::{form_field::FormField, text_input::TextInput, CoverStatus},
         Model,
     },
@@ -23,6 +23,7 @@ const LABELS: &[&str] = &[
     " Year: ",
     " Pages: ",
     " Status: ",
+    " Finished on: ",
     " Rating: ",
     " Note: ",
 ];
@@ -40,6 +41,12 @@ pub fn render_book_info(model: &mut Model, frame: &mut Frame, area: Rect) {
             static_line(book.year.to_string()),
             static_line(book.pages.to_string()),
             reading_status_line(&book.reading_status, true),
+            static_line(
+                book.finished_at
+                    .last()
+                    .map(|d| d.to_string())
+                    .unwrap_or("".to_string()),
+            ),
             Line::styled(
                 STAR.repeat(book.rating as usize),
                 Style::default().fg(Color::LightYellow),
@@ -65,6 +72,7 @@ pub fn render_book_form(model: &mut Model, frame: &mut Frame, area: Rect) {
                 &form.reading_status,
                 form.active == FormField::ReadingStatus,
             ),
+            render_text_line(&form.finished_at, form.active == FormField::FinishedAt),
             render_text_line(
                 &TextInput::new(rating_stars),
                 form.active == FormField::Rating,

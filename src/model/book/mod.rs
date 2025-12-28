@@ -1,5 +1,7 @@
-use crate::model::book_info::form::BookForm;
-use log::error;
+pub mod reading_status;
+
+use crate::model::{book::reading_status::ReadingStatus, book_info::form::BookForm};
+use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use uuid::Uuid;
@@ -12,13 +14,14 @@ pub struct Book {
     pub year: u16,
     pub pages: u16,
     pub reading_status: ReadingStatus,
+    pub finished_at: Vec<NaiveDate>,
     pub rating: u8,
     pub note: String,
     pub cover_path: Option<PathBuf>,
 }
 
 impl Book {
-    pub fn from(form: &BookForm) -> Result<Self, String> {
+    pub fn from(form: &BookForm, existing_book: Option<&Book>) -> Result<Self, String> {
         let title = form.title.text.trim().to_string();
         if title.is_empty() {
             return Err("Title cannot be empty".to_string());
@@ -35,6 +38,35 @@ impl Book {
             .trim()
             .parse::<u16>()
             .map_err(|_| "Pages must be a valid number".to_string())?;
+        let mut finished_at: Vec<NaiveDate> = vec![];
+        let new_finished_at_str = form.finished_at.text.trim();
+        if !new_finished_at_str.is_empty() {
+            let new_finished_at: NaiveDate = new_finished_at_str
+                .parse::<NaiveDate>()
+                .map_err(|_| "Finished on must be a valid date in format DD.MM.YYYY")?;
+            match existing_book {
+                Some(existing_book) => match existing_book.finished_at.last() {
+                    Some(most_recent_finished_at) => {
+                        if new_finished_at > most_recent_finished_at.clone() {
+                            finished_at = existing_book.finished_at.clone();
+                            finished_at.push(new_finished_at);
+                        } else {
+                            return Err(
+                                "New finished on date has to be more recent than the last."
+                                    .to_string(),
+                            );
+                        }
+                    }
+                    None => {
+                        finished_at.push(new_finished_at);
+                    }
+                },
+                None => {
+                    finished_at.push(new_finished_at);
+                }
+            }
+        }
+
         let rating = form
             .rating
             .to_string()
@@ -60,9 +92,10 @@ impl Book {
             year,
             pages,
             reading_status: form.reading_status.clone(),
+            finished_at,
             rating,
             note,
-            cover_path: Some(format!("./covers/{}.jpg", form.title.text).into()), // TODO: allow to override?
+            cover_path: Some(PathBuf::from("./covers").join(format!("{}.jpg", form.title.text))),
         })
     }
 
@@ -77,35 +110,5 @@ impl Book {
 
     pub fn is_read(&self) -> bool {
         self.reading_status == ReadingStatus::Read
-    }
-}
-
-#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
-pub enum ReadingStatus {
-    #[default]
-    ToRead,
-    Reading,
-    Read,
-}
-
-impl ReadingStatus {
-    pub fn index(&self) -> usize {
-        match self {
-            ReadingStatus::ToRead => 0,
-            ReadingStatus::Reading => 1,
-            ReadingStatus::Read => 2,
-        }
-    }
-
-    pub fn from(index: usize) -> Self {
-        match index {
-            0 => ReadingStatus::ToRead,
-            1 => ReadingStatus::Reading,
-            2 => ReadingStatus::Read,
-            _ => {
-                error!("Invalid index for reading status: {index}");
-                panic!("Invalid index for reading status");
-            }
-        }
     }
 }

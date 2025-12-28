@@ -93,7 +93,8 @@ impl Model {
             },
             Message::NextFormField => self.book_info.form.next_field(),
             Message::PreviousFormField => self.book_info.form.previous_field(),
-            Message::SubmitForm => match Book::from(&self.book_info.form) {
+            Message::SubmitForm => match Book::from(&self.book_info.form, self.get_selected_book())
+            {
                 Ok(mut book) => {
                     match self.book_info.mode {
                         BookInfoMode::Add => self.add_book(book),

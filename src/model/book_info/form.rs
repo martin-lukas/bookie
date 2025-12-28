@@ -1,5 +1,5 @@
 use crate::model::{
-    book::{Book, ReadingStatus},
+    book::{reading_status::ReadingStatus, Book},
     book_info::{
         form_field::FormField, text_input::TextInput, DEFAULT_RATING, MAX_RATING, MIN_RATING,
     },
@@ -14,6 +14,7 @@ pub struct BookForm {
     pub year: TextInput,
     pub pages: TextInput,
     pub reading_status: ReadingStatus,
+    pub finished_at: TextInput,
     pub rating: u8,
     pub note: TextInput,
     pub active: FormField,
@@ -29,6 +30,12 @@ impl BookForm {
             year: TextInput::new(book.year.to_string()),
             pages: TextInput::new(book.pages.to_string()),
             reading_status: book.reading_status.clone(),
+            finished_at: TextInput::new(
+                book.finished_at
+                    .last()
+                    .map(|d| d.to_string())
+                    .unwrap_or("".to_string()),
+            ),
             rating: book.rating,
             note: TextInput::new(book.note.clone()).multiline(true),
             active: FormField::Title,
@@ -44,6 +51,7 @@ impl BookForm {
             year: TextInput::default(),
             pages: TextInput::default(),
             reading_status: ReadingStatus::ToRead,
+            finished_at: TextInput::default(),
             rating: DEFAULT_RATING,
             note: TextInput::default().multiline(true),
             active: FormField::Title,
@@ -57,6 +65,7 @@ impl BookForm {
             FormField::Authors => self.authors.insert_char(c),
             FormField::Year => self.year.insert_char(c),
             FormField::Pages => self.pages.insert_char(c),
+            FormField::FinishedAt => self.finished_at.insert_char(c),
             FormField::Note => self.note.insert_char(c),
             _ => {}
         }
@@ -68,6 +77,7 @@ impl BookForm {
             FormField::Authors => self.authors.delete_char(),
             FormField::Year => self.year.delete_char(),
             FormField::Pages => self.pages.delete_char(),
+            FormField::FinishedAt => self.finished_at.delete_char(),
             FormField::Note => self.note.delete_char(),
             _ => {}
         };
@@ -79,6 +89,7 @@ impl BookForm {
             FormField::Authors => self.authors.move_cursor_left(),
             FormField::Year => self.year.move_cursor_left(),
             FormField::Pages => self.pages.move_cursor_left(),
+            FormField::FinishedAt => self.finished_at.move_cursor_left(),
             FormField::Note => self.note.move_cursor_left(),
             _ => {}
         }
@@ -90,6 +101,7 @@ impl BookForm {
             FormField::Authors => self.authors.move_cursor_right(),
             FormField::Year => self.year.move_cursor_right(),
             FormField::Pages => self.pages.move_cursor_right(),
+            FormField::FinishedAt => self.finished_at.move_cursor_right(),
             FormField::Note => self.note.move_cursor_right(),
             _ => {}
         }

@@ -5,17 +5,19 @@ pub enum FormField {
     Year,
     Pages,
     ReadingStatus,
+    FinishedAt,
     Rating,
     Note,
 }
 
 impl FormField {
-    pub const ORDER: [FormField; 7] = [
+    pub const ORDER: [FormField; 8] = [
         FormField::Title,
         FormField::Authors,
         FormField::Year,
         FormField::Pages,
         FormField::ReadingStatus,
+        FormField::FinishedAt,
         FormField::Rating,
         FormField::Note,
     ];
