@@ -7,8 +7,8 @@ use ratatui::{
 
 const HELP_1: &[&str] = &["A: add", "E: edit", "D: delete"];
 const HELP_2: &[&str] = &["←/→: choose item in edit", "Tab/Shift+Tab: switch field"];
-const HELP_3: &[&str] = &["Ctrl+S: save add/edit"];
-const HELP_4: &[&str] = &["F: find"];
+const HELP_3: &[&str] = &[""];
+const HELP_4: &[&str] = &["Ctrl+S: save add/edit"];
 
 pub fn render_help_1(frame: &mut Frame, area: Rect) {
     with_help_panel(frame, area, |frame, inner| {

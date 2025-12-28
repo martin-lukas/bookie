@@ -107,8 +107,4 @@ impl Book {
             .unwrap_or(&self.title)
             .to_lowercase()
     }
-
-    pub fn is_read(&self) -> bool {
-        self.reading_status == ReadingStatus::Read
-    }
 }

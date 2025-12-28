@@ -10,7 +10,7 @@ use crate::{
     event::Message,
     image_util,
     model::{
-        book::Book,
+        book::{reading_status::ReadingStatus, Book},
         book_info::{
             form::BookForm, form_field::FormField, BookInfoMode, BookInfoState, CoverStatus,
         },
@@ -21,6 +21,7 @@ use crate::{
         status::StatusMode,
     },
 };
+use chrono::Datelike;
 use log::info;
 use ratatui_image::thread::{ResizeRequest, ResizeResponse, ThreadProtocol};
 use std::{collections::HashSet, io, sync::mpsc};
@@ -133,24 +134,45 @@ impl Model {
         self.books.get(self.book_table.selected()?)
     }
 
-    pub fn books_read(&self) -> usize {
-        self.books.iter().filter(|b| b.is_read()).count()
-    }
-
-    pub fn unique_authors_read(&self) -> usize {
+    pub fn unique_authors(&self) -> usize {
         self.books
             .iter()
-            .filter(|b| b.is_read())
             .flat_map(|b| b.authors.clone())
             .collect::<HashSet<String>>()
             .len()
     }
 
-    pub fn pages_read(&self) -> usize {
+    pub fn books_to_read(&self) -> usize {
         self.books
             .iter()
-            .filter(|b| b.is_read())
-            .map(|b| b.pages as usize)
+            .filter(|b| b.reading_status == ReadingStatus::ToRead)
+            .count()
+    }
+
+    pub fn books_reading(&self) -> usize {
+        self.books
+            .iter()
+            .filter(|b| b.reading_status == ReadingStatus::Reading)
+            .count()
+    }
+
+    pub fn books_read(&self) -> usize {
+        self.books
+            .iter()
+            .filter(|b| b.reading_status == ReadingStatus::Read)
+            .count()
+    }
+
+    pub fn pages_read_in_year(&self, year: u16) -> usize {
+        self.books
+            .iter()
+            .map(|b| {
+                (b.pages as usize)
+                    * b.finished_at
+                        .iter()
+                        .filter(|d| d.year() == (year as i32))
+                        .count()
+            })
             .sum()
     }
 

@@ -20,8 +20,8 @@ pub fn render_header(_: &Model, frame: &mut Frame, area: Rect) {
             Constraint::Length(13),
             Constraint::Length(26),
             Constraint::Fill(1),
-            Constraint::Length(26),
-            Constraint::Length(13),
+            Constraint::Length(16),
+            Constraint::Length(23),
         ])
         .split(area);
 
