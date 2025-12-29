@@ -14,6 +14,7 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     Frame,
 };
+use unicode_width::UnicodeWidthStr;
 
 pub fn render_content(model: &mut Model, frame: &mut Frame, area: Rect) {
     let chunks = Layout::default()
@@ -33,4 +34,8 @@ pub fn render_content(model: &mut Model, frame: &mut Frame, area: Rect) {
         }
     }
     render_book_stats(model, frame, chunks[1]);
+}
+
+pub fn max_label_width(labels: &[&str]) -> u16 {
+    labels.iter().map(|l| l.width() as u16).max().unwrap_or(0)
 }

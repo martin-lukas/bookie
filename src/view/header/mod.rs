@@ -18,9 +18,9 @@ pub fn render_header(_: &Model, frame: &mut Frame, area: Rect) {
         .direction(Direction::Horizontal)
         .constraints([
             Constraint::Length(13),
-            Constraint::Length(26),
+            Constraint::Length(29),
             Constraint::Fill(1),
-            Constraint::Length(16),
+            Constraint::Length(19),
             Constraint::Length(23),
         ])
         .split(area);

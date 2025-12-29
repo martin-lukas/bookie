@@ -142,10 +142,10 @@ impl Model {
             .len()
     }
 
-    pub fn books_to_read(&self) -> usize {
+    pub fn books_read(&self) -> usize {
         self.books
             .iter()
-            .filter(|b| b.reading_status == ReadingStatus::ToRead)
+            .filter(|b| !b.finished_at.is_empty())
             .count()
     }
 
@@ -156,11 +156,23 @@ impl Model {
             .count()
     }
 
-    pub fn books_read(&self) -> usize {
+    pub fn books_to_read(&self) -> usize {
         self.books
             .iter()
-            .filter(|b| b.reading_status == ReadingStatus::Read)
+            .filter(|b| b.reading_status == ReadingStatus::ToRead)
             .count()
+    }
+
+    pub fn books_read_in_year(&self, year: u16) -> usize {
+        self.books
+            .iter()
+            .map(|b| {
+                b.finished_at
+                    .iter()
+                    .filter(|d| d.year() == (year as i32))
+                    .count()
+            })
+            .sum()
     }
 
     pub fn pages_read_in_year(&self, year: u16) -> usize {

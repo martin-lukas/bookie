@@ -1,5 +1,8 @@
 .idea/
 target/
-*.log
-bookie-state.json*
+
+# Runtime files
+bookie
 covers/
+bookie-state.json*
+*.log

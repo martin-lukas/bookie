@@ -4,7 +4,7 @@ use crate::{
         book_info::{form_field::FormField, text_input::TextInput, CoverStatus},
         Model,
     },
-    view::{with_panel, STAR},
+    view::{content::max_label_width, with_panel, STAR},
 };
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
@@ -15,7 +15,6 @@ use ratatui::{
 };
 use ratatui_image::StatefulImage;
 use unicode_segmentation::UnicodeSegmentation;
-use unicode_width::UnicodeWidthStr;
 
 const LABELS: &[&str] = &[
     " Title: ",
@@ -178,10 +177,6 @@ fn render_cover_placeholder(frame: &mut Frame, area: Rect, text: &str) {
             .style(Style::default().fg(Color::DarkGray)),
         inner,
     );
-}
-
-fn max_label_width(labels: &[&str]) -> u16 {
-    labels.iter().map(|l| l.width() as u16).max().unwrap_or(0)
 }
 
 fn reading_status_line(status: &ReadingStatus, active: bool) -> Line<'static> {

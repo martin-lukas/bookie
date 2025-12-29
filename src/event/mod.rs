@@ -6,6 +6,8 @@ use crate::model::{focus::Focus, Model};
 use ratatui::crossterm::event::{self, Event};
 use std::time::Duration;
 
+const REFRESH_INTERVAL: u64 = 50;
+
 #[derive(PartialEq)]
 pub enum Message {
     Quit,
@@ -29,7 +31,7 @@ pub enum Message {
 }
 
 pub fn handle_event(model: &Model) -> color_eyre::Result<Option<Message>> {
-    if event::poll(Duration::from_millis(250))? {
+    if event::poll(Duration::from_millis(REFRESH_INTERVAL))? {
         if let Event::Key(key) = event::read()? {
             if key.kind == event::KeyEventKind::Press {
                 return Ok(handle_key(model, key));
