@@ -43,7 +43,7 @@ impl Book {
         if !new_finished_at_str.is_empty() {
             let new_finished_at: NaiveDate = new_finished_at_str
                 .parse::<NaiveDate>()
-                .map_err(|_| "Finished on must be a valid date in format DD.MM.YYYY")?;
+                .map_err(|_| "Finished on must be a valid date in format YYYY-MM-DD")?;
             match existing_book {
                 Some(existing_book) => match existing_book.finished_at.last() {
                     Some(most_recent_finished_at) => {
