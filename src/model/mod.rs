@@ -7,7 +7,7 @@ pub mod running_state;
 pub mod status;
 
 use crate::{
-    event::Message,
+    event::{app_event::AppEvent, Message},
     image_util,
     model::{
         book::{reading_status::ReadingStatus, Book},
@@ -23,8 +23,12 @@ use crate::{
 };
 use chrono::Datelike;
 use log::info;
-use ratatui_image::thread::{ResizeRequest, ResizeResponse, ThreadProtocol};
-use std::{collections::HashSet, io, sync::mpsc};
+use ratatui_image::thread::{ResizeRequest, ThreadProtocol};
+use std::{
+    collections::HashSet,
+    io,
+    sync::{mpsc, mpsc::Sender},
+};
 use uuid::Uuid;
 
 pub struct Model {
@@ -34,18 +38,28 @@ pub struct Model {
     pub status: status::State,
     pub focus: Focus,
     pub running_state: RunningState,
+    pub app_tx: Sender<AppEvent>,
 }
 
 impl Model {
-    pub fn from(saved_state: SavedState) -> Self {
-        let book_count = saved_state.books.len();
+    pub fn new(app_tx: Sender<AppEvent>) -> Self {
         Self {
-            books: saved_state.books,
-            book_table: BookTableState::new(book_count, saved_state.selected),
+            books: vec![],
+            book_table: BookTableState::new(0, None),
             book_info: BookInfoState::new(image_util::create_picker()),
             status: status::State::new(),
             focus: Focus::Table,
             running_state: RunningState::Running,
+            app_tx,
+        }
+    }
+
+    pub fn from(saved_state: SavedState, app_tx: Sender<AppEvent>) -> Self {
+        let book_count = saved_state.books.len();
+        Self {
+            books: saved_state.books,
+            book_table: BookTableState::new(book_count, saved_state.selected),
+            ..Self::new(app_tx)
         }
     }
 
@@ -114,15 +128,15 @@ impl Model {
         None
     }
 
-    pub fn load() -> Self {
-        let mut model = Self::from(persistance::load().expect("Failed to load state."));
+    pub fn load(app_tx: Sender<AppEvent>) -> Self {
+        let mut model = Self::from(persistance::load().expect("Failed to load state."), app_tx);
         model.book_info.image_picker = image_util::create_picker();
-        if let Some(new_book_index) = model.book_table.table_state.selected() {
-            model.load_book_cover_async(new_book_index);
-        }
         model.books.iter_mut().for_each(|book| {
             book.cover_path = Some(format!("./covers/{}.jpg", book.title).into());
         });
+        if let Some(book_index) = model.book_table.table_state.selected() {
+            model.load_book_cover_async(book_index);
+        }
         model
     }
 
@@ -253,22 +267,18 @@ impl Model {
         self.book_info.cover = CoverStatus::Loading;
 
         let (tx_resize_req, rx_resize_req) = mpsc::channel::<ResizeRequest>();
-        let (tx_resize_res, rx_resize_res) = mpsc::channel::<ResizeResponse>();
 
+        let app_tx = self.app_tx.clone();
         std::thread::spawn(move || {
             while let Ok(req) = rx_resize_req.recv() {
-                match req.resize_encode() {
-                    Ok(res) => {
-                        tx_resize_res.send(res).ok();
-                    }
-                    Err(_) => panic!("Failed to resize encode image"),
+                if let Ok(res) = req.resize_encode() {
+                    app_tx.send(AppEvent::CoverReady(res)).ok();
                 }
             }
         });
 
         let Some(path) = &self.books[book_index].cover_path else {
             self.book_info.cover = CoverStatus::None;
-            self.book_info.cover_rx = None;
             return;
         };
         let img = match image::ImageReader::open(path).and_then(|r| {
@@ -278,7 +288,6 @@ impl Model {
             Ok(img) => img,
             Err(_) => {
                 self.book_info.cover = CoverStatus::None;
-                self.book_info.cover_rx = None;
                 return;
             }
         };
@@ -286,8 +295,6 @@ impl Model {
 
         self.book_info.cover =
             CoverStatus::Ready(ThreadProtocol::new(tx_resize_req, Some(protocol)));
-
-        self.book_info.cover_rx = Some(rx_resize_res);
     }
 
     fn add_book(&mut self, book: Book) {

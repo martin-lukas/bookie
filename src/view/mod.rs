@@ -3,7 +3,7 @@ mod footer;
 mod header;
 
 use crate::{
-    model::{book_info::CoverStatus, Model},
+    model::Model,
     view::{content::render_content, footer::render_footer, header::render_header},
 };
 use ratatui::{
@@ -32,15 +32,6 @@ pub fn view(model: &mut Model, frame: &mut Frame) {
     render_header(model, frame, chunks[0]);
     render_content(model, frame, chunks[1]);
     render_footer(model, frame, chunks[2]);
-
-    // Clean up for specific terminals (Kitty etc.)
-    if let Some(rx_main) = &model.book_info.cover_rx {
-        if let Ok(res) = rx_main.try_recv() {
-            if let CoverStatus::Ready(protocol) = &mut model.book_info.cover {
-                let _ = protocol.update_resized_protocol(res);
-            }
-        }
-    }
 }
 
 pub fn with_panel<F>(frame: &mut Frame, area: Rect, title: &str, render: F)

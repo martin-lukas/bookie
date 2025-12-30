@@ -77,7 +77,14 @@ fn create_book_table(
             } else {
                 Color::White
             })),
-            Cell::from(b.authors.join(", ").clone()).style(Style::default().fg(if is_row_active {
+            Cell::from(
+                b.authors
+                    .iter()
+                    .map(Book::author_with_initials)
+                    .collect::<Vec<String>>()
+                    .join(", "),
+            )
+            .style(Style::default().fg(if is_row_active {
                 Color::Rgb(0, 0, 0)
             } else {
                 Color::White

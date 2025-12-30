@@ -30,16 +30,22 @@ pub fn load() -> color_eyre::Result<SavedState> {
             Ok(saved_state)
         }
         Err(_) => {
-            let saved_state = SavedState::default();
-            save_state(&Model::from(saved_state.clone()))?;
-            Ok(saved_state)
+            initial_save_state()?;
+            Ok(SavedState::default())
         }
     }
 }
 
 pub fn save_state(model: &Model) -> color_eyre::Result<()> {
-    let saved_state = SavedState::from(&model);
-    let json = serde_json::to_string_pretty(&saved_state).expect("Failed to save state into JSON");
+    serialize_saved_state(SavedState::from(&model))
+}
+
+fn initial_save_state() -> color_eyre::Result<()> {
+    serialize_saved_state(SavedState::default())
+}
+
+fn serialize_saved_state(state: SavedState) -> color_eyre::Result<()> {
+    let json = serde_json::to_string_pretty(&state).expect("Failed to save state into JSON");
     let mut file = File::create(SAVED_STATE_PATH)?;
     file.write_all(json.as_bytes())?;
     Ok(())

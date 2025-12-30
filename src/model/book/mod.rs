@@ -107,4 +107,23 @@ impl Book {
             .unwrap_or(&self.title)
             .to_lowercase()
     }
+
+    pub fn author_with_initials(author: &String) -> String {
+        let parts: Vec<&str> = author.split_whitespace().collect();
+        if parts.is_empty() {
+            return String::new();
+        }
+        let (initials, surname) = parts.split_at(parts.len() - 1);
+        let initials = initials
+            .iter()
+            .filter_map(|p| p.chars().next())
+            .map(|c| format!("{}.", c))
+            .collect::<Vec<_>>()
+            .join(" ");
+        if initials.is_empty() {
+            surname[0].to_string()
+        } else {
+            format!("{} {}", initials, surname[0])
+        }
+    }
 }

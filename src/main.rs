@@ -5,12 +5,13 @@ mod model;
 mod view;
 
 use crate::{
-    event::handle_event,
+    event::{app_event::AppEvent, handle_key, spawn_input_thread},
     logging::setup_logger,
     model::{running_state::RunningState, Model},
     view::view,
 };
 use ratatui::DefaultTerminal;
+use std::sync::mpsc;
 
 fn main() -> color_eyre::Result<()> {
     setup_logger()?;
@@ -24,14 +25,30 @@ fn main() -> color_eyre::Result<()> {
 }
 
 fn run(mut terminal: DefaultTerminal) -> color_eyre::Result<()> {
-    let mut model = Model::load();
+    let (event_tx, event_rx) = mpsc::channel::<AppEvent>();
+    let mut model = Model::load(event_tx.clone());
+
+    spawn_input_thread(event_tx.clone());
+
+    // Initial render
+    terminal.draw(|frame| view(&mut model, frame))?;
 
     while model.running_state != RunningState::Done {
-        terminal.draw(|frame| view(&mut model, frame))?;
-        let mut current_msg = handle_event(&model)?;
-        while current_msg.is_some() {
-            current_msg = model.update(current_msg.unwrap());
+        match event_rx.recv()? {
+            AppEvent::Key(key) => {
+                if let Some(msg) = handle_key(&model, key) {
+                    let mut current = Some(msg);
+                    while let Some(m) = current {
+                        current = model.update(m);
+                    }
+                }
+            }
+            AppEvent::CoverReady(res) => {
+                model.book_info.handle_cover_response(res);
+            }
+            AppEvent::Resize => {}
         }
+        terminal.draw(|frame| view(&mut model, frame))?;
     }
 
     Ok(())
