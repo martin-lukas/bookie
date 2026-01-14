@@ -22,7 +22,6 @@ pub enum Message {
     CancelConfirm,
     // Form messages
     CancelForm,
-    NewLineChar,
     InsertChar(char),
     DeleteChar,
     FormRight,

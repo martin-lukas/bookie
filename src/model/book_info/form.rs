@@ -16,7 +16,6 @@ pub struct BookForm {
     pub reading_status: ReadingStatus,
     pub finished_at: TextInput,
     pub rating: u8,
-    pub note: TextInput,
     pub active: FormField,
     pub error: Option<String>,
 }
@@ -37,7 +36,6 @@ impl BookForm {
                     .unwrap_or("".to_string()),
             ),
             rating: book.rating,
-            note: TextInput::new(book.note.clone()).multiline(true),
             active: FormField::Title,
             error: None,
         }
@@ -53,7 +51,6 @@ impl BookForm {
             reading_status: ReadingStatus::ToRead,
             finished_at: TextInput::default(),
             rating: DEFAULT_RATING,
-            note: TextInput::default().multiline(true),
             active: FormField::Title,
             error: None,
         }
@@ -66,7 +63,6 @@ impl BookForm {
             FormField::Year => self.year.insert_char(c),
             FormField::Pages => self.pages.insert_char(c),
             FormField::FinishedAt => self.finished_at.insert_char(c),
-            FormField::Note => self.note.insert_char(c),
             _ => {}
         }
     }
@@ -78,7 +74,6 @@ impl BookForm {
             FormField::Year => self.year.delete_char(),
             FormField::Pages => self.pages.delete_char(),
             FormField::FinishedAt => self.finished_at.delete_char(),
-            FormField::Note => self.note.delete_char(),
             _ => {}
         };
     }
@@ -90,7 +85,6 @@ impl BookForm {
             FormField::Year => self.year.move_cursor_left(),
             FormField::Pages => self.pages.move_cursor_left(),
             FormField::FinishedAt => self.finished_at.move_cursor_left(),
-            FormField::Note => self.note.move_cursor_left(),
             _ => {}
         }
     }
@@ -102,7 +96,6 @@ impl BookForm {
             FormField::Year => self.year.move_cursor_right(),
             FormField::Pages => self.pages.move_cursor_right(),
             FormField::FinishedAt => self.finished_at.move_cursor_right(),
-            FormField::Note => self.note.move_cursor_right(),
             _ => {}
         }
     }

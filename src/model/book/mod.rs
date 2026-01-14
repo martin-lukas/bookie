@@ -16,7 +16,6 @@ pub struct Book {
     pub reading_status: ReadingStatus,
     pub finished_at: Vec<NaiveDate>,
     pub rating: u8,
-    pub note: String,
     pub cover_path: Option<PathBuf>,
 }
 
@@ -83,7 +82,6 @@ impl Book {
         if authors.is_empty() {
             return Err("At least one author is required".to_string());
         }
-        let note = form.note.text.trim().to_string();
 
         Ok(Self {
             id: form.id.unwrap_or(Uuid::new_v4()),
@@ -94,7 +92,6 @@ impl Book {
             reading_status: form.reading_status.clone(),
             finished_at,
             rating,
-            note,
             cover_path: Some(PathBuf::from("./covers").join(format!("{}.jpg", form.title.text))),
         })
     }

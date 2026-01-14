@@ -7,11 +7,10 @@ pub enum FormField {
     ReadingStatus,
     FinishedAt,
     Rating,
-    Note,
 }
 
 impl FormField {
-    pub const ORDER: [FormField; 8] = [
+    pub const ORDER: [FormField; 7] = [
         FormField::Title,
         FormField::Authors,
         FormField::Year,
@@ -19,7 +18,6 @@ impl FormField {
         FormField::ReadingStatus,
         FormField::FinishedAt,
         FormField::Rating,
-        FormField::Note,
     ];
 
     pub fn next(&self) -> Self {

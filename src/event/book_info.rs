@@ -9,10 +9,7 @@ pub fn handle_key(key: event::KeyEvent) -> Option<Message> {
         (KeyCode::Char('c'), mods) if mods.contains(KeyModifiers::CONTROL) => {
             Some(Message::CancelForm)
         }
-        (KeyCode::Enter, _) => Some(Message::NewLineChar),
-        (KeyCode::Char('s'), mods) if mods.contains(KeyModifiers::CONTROL) => {
-            Some(Message::SubmitForm)
-        }
+        (KeyCode::Enter, _) => Some(Message::SubmitForm),
         (KeyCode::Char(c), _) => Some(Message::InsertChar(c)),
         (KeyCode::Left, _) => Some(Message::FormLeft),
         (KeyCode::Right, _) => Some(Message::FormRight),

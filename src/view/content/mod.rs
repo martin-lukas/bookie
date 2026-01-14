@@ -23,7 +23,7 @@ pub fn render_content(model: &mut Model, frame: &mut Frame, area: Rect) {
         .split(area);
     let table_details_chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Fill(2), Constraint::Fill(3)])
+        .constraints([Constraint::Fill(1), Constraint::Length(13)])
         .split(chunks[0]);
 
     render_book_table(model, frame, table_details_chunks[0]);

@@ -91,10 +91,6 @@ impl Model {
             Message::EditBook => self.enter_edit_mode(),
             Message::CancelForm => self.enter_view_mode(),
             Message::InsertChar(c) => self.book_info.form.insert_char(c),
-            Message::NewLineChar => match self.book_info.form.active {
-                FormField::Note => self.book_info.form.insert_char('\n'),
-                _ => return Some(Message::SubmitForm),
-            },
             Message::DeleteChar => self.book_info.form.delete_char(),
             Message::FormLeft => match self.book_info.form.active {
                 FormField::ReadingStatus => self.book_info.form.decrease_reading_status(),

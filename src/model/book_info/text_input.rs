@@ -4,22 +4,12 @@ use unicode_segmentation::UnicodeSegmentation;
 pub struct TextInput {
     pub text: String,
     pub cursor: usize,
-    pub multiline: bool,
 }
 
 impl TextInput {
     pub fn new(text: String) -> Self {
         let cursor = UnicodeSegmentation::graphemes(text.as_str(), true).count();
-        Self {
-            text,
-            cursor,
-            multiline: false,
-        }
-    }
-
-    pub fn multiline(mut self, multiline: bool) -> Self {
-        self.multiline = multiline;
-        self
+        Self { text, cursor }
     }
 
     pub fn insert_char(&mut self, c: char) {

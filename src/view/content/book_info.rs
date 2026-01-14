@@ -9,7 +9,7 @@ use crate::{
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
-    text::{Line, Span, Text},
+    text::{Line, Span},
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
@@ -24,7 +24,6 @@ const LABELS: &[&str] = &[
     " Status: ",
     " Finished on: ",
     " Rating: ",
-    " Note: ",
 ];
 
 pub fn render_book_info(model: &mut Model, frame: &mut Frame, area: Rect) {
@@ -52,9 +51,7 @@ pub fn render_book_info(model: &mut Model, frame: &mut Frame, area: Rect) {
             ),
         ];
 
-        let note = book.note.clone();
-
-        render_book_info_content(LABELS, values, Paragraph::new(note), model, frame, area);
+        render_book_info_content(LABELS, values, model, frame, area);
     });
 }
 
@@ -78,16 +75,13 @@ pub fn render_book_form(model: &mut Model, frame: &mut Frame, area: Rect) {
             ),
         ];
 
-        let note = render_text_paragraph(&form.note, form.active == FormField::Note);
-
-        render_book_info_content(LABELS, values, note, model, frame, area);
+        render_book_info_content(LABELS, values, model, frame, area);
     });
 }
 
 fn render_book_info_content(
     labels: &[&str],
     values: Vec<Line<'static>>,
-    note: Paragraph<'static>,
     model: &mut Model,
     frame: &mut Frame,
     inner: Rect,
@@ -108,13 +102,7 @@ fn render_book_info_content(
         chunks[1],
     );
 
-    let value_chunks = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([Constraint::Length(values.len() as u16), Constraint::Fill(1)])
-        .split(chunks[2]);
-
-    frame.render_widget(Paragraph::new(values), value_chunks[0]);
-    frame.render_widget(note, value_chunks[1]);
+    frame.render_widget(Paragraph::new(values), chunks[2]);
 }
 
 fn render_book_info_empty(frame: &mut Frame, inner: Rect) {
@@ -226,14 +214,6 @@ fn render_text_line(input: &TextInput, active: bool) -> Line<'static> {
     text_with_cursor(&input.text, input.cursor, active)
 }
 
-fn render_text_paragraph(input: &TextInput, active: bool) -> Paragraph<'static> {
-    Paragraph::new(text_paragraph_with_cursor(
-        &input.text,
-        input.cursor,
-        active,
-    ))
-}
-
 fn text_with_cursor(text: &str, cursor: usize, active: bool) -> Line<'static> {
     let graphemes: Vec<&str> = UnicodeSegmentation::graphemes(text, true).collect();
 
@@ -262,56 +242,6 @@ fn text_with_cursor(text: &str, cursor: usize, active: bool) -> Line<'static> {
     }
 
     Line::from(spans)
-}
-
-fn text_paragraph_with_cursor(text: &str, cursor: usize, active: bool) -> Text<'static> {
-    let base = if active {
-        Style::default().fg(Color::LightYellow)
-    } else {
-        Style::default()
-    };
-
-    let cursor_style = Style::default().bg(Color::LightYellow).fg(Color::Black);
-
-    let graphemes: Vec<&str> = UnicodeSegmentation::graphemes(text, true).collect();
-
-    let mut lines: Vec<Vec<Span>> = vec![Vec::new()];
-    let mut idx = 0;
-
-    for g in graphemes {
-        if g == "\n" {
-            // Cursor at end of this line
-            if active && idx == cursor {
-                lines
-                    .last_mut()
-                    .unwrap()
-                    .push(Span::styled(" ".to_string(), cursor_style));
-            }
-
-            lines.push(Vec::new());
-            idx += 1;
-            continue;
-        }
-
-        let span = if active && idx == cursor {
-            Span::styled(g.to_string(), cursor_style)
-        } else {
-            Span::styled(g.to_string(), base)
-        };
-
-        lines.last_mut().unwrap().push(span);
-        idx += 1;
-    }
-
-    // Cursor at very end
-    if active && idx == cursor {
-        lines
-            .last_mut()
-            .unwrap()
-            .push(Span::styled(" ".to_string(), cursor_style));
-    }
-
-    Text::from(lines.into_iter().map(Line::from).collect::<Vec<_>>())
 }
 
 fn static_line(text: impl Into<String>) -> Line<'static> {
